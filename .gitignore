@@ -99,3 +99,11 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Local configuration
+config.json
+
+# Random / misc
+archive
+*.bak
+backup
