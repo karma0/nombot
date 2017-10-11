@@ -1,0 +1,2 @@
+# nombot
+Cryptocurrency Trading Bot
