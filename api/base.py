@@ -136,8 +136,12 @@ class ApiAdapter:
 
 
 class IApi:
+    apiname = None
+
     """Interface to an Api implementation"""
     def __init__(self, acct):
+        if self.apiname == None:
+            raise Exception("CRITICAL: No `apiname` class variable.")
         self.api = acct.api
         self.secret = acct.secret
         self.endpoint = acct.endpoint

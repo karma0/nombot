@@ -5,7 +5,7 @@ from api.base import ApiAdapter
 from context import build_context
 
 
-class Pipeline:
+class AppBuider:
     def __init__(self, conf, Api, strategy):
         self.conf = conf
         self.api = ApiAdapter(self.conf.get_credentials(), Api,
@@ -14,11 +14,12 @@ class Pipeline:
 
     def run(self):
         """Run the queries and middleware pipeline"""
-        self.api.run(self.mw.process)
+        self.api.run(self.mw.receive)
+
 
 class Middleware:
     def __init__(self, strat):
         self.strat = strat
 
-    def process(self, results):
-        self.strategy.execute(build_context(
+    def receive(self, results):
+        self.strategy.execute(build_context())

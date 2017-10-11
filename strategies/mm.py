@@ -16,6 +16,3 @@ class MarketMaker(IStrategy):
         echo("ALGO!")
         # currently, just a pass-through
         return context
-
-    def shutdown(self):
-        pass
