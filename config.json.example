@@ -1,0 +1,22 @@
+{
+  "api": {
+    "apiKey": "xxx",
+    "apiSecret": "xxx",
+    "endpoint": "https://api.coinigy.com/api/v1"
+  },
+
+  "subscriptions": {
+    "trade": [
+      "TRADE-OK--BTC--CNY",
+      "TRADE-BITF--BTC--USD"
+    ],
+    "order": [
+      "ORDER-OK--BTC--USD"
+    ]
+  },
+
+  "publishers": {
+    "trade": "./data/trades.csv",
+    "order": "./data/orders.csv"
+  }
+}
