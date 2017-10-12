@@ -9,7 +9,7 @@ from api.context import AllApiContexts
 from api.result_types import RESULT_TYPES
 
 
-class ApiAdapterFactory(Creator):
+class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
     """Generator of ApiAdapters"""
     def _factory_method(self):
         return ApiAdapter()
@@ -53,7 +53,7 @@ class ApisAdapter:
             api.shutdown()
 
 
-class ApiProduct:
+class ApiProduct:  # pylint: disable=too-few-public-methods
     """ApiAdapterFactory Product interface"""
     def __init__(self):
         self.api_class = None

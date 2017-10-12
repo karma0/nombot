@@ -7,7 +7,7 @@ instantiation to subclasses.
 import abc
 
 
-class Creator(metaclass=abc.ABCMeta):
+class Creator(metaclass=abc.ABCMeta):  # pylint: disable=too-few-public-methods
     """
     Declare the factory method, which returns an object of type Product.
     Creator may also define a default implementation of the factory
@@ -22,7 +22,7 @@ class Creator(metaclass=abc.ABCMeta):
         pass
 
 
-class Product(metaclass=abc.ABCMeta):
+class Product(metaclass=abc.ABCMeta):  # pylint: disable=too-few-public-methods
     """Define the interface of objects the factory method creates."""
     @abc.abstractmethod
     def interface(self):
