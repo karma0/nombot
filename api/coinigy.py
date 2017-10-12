@@ -5,8 +5,10 @@ import numpy as np
 import pandas as pd
 import requests
 
+from api.base import IApi, ApiErrorMixin
 
-class Coinigy:
+
+class Coinigy(IApi, ApiErrorMixin):
     """
         This class implements coinigy's REST api as documented in the
         documentation available at:
@@ -18,19 +20,21 @@ class Coinigy:
         "accounts": "data"
     }
 
-    def __init__(self, acct):
+    def __init__(self, context, exchange=None, market=None):
         """Launched by Api when we're ready to connect"""
-        self.api = acct.api
-        self.secret = acct.secret
-        self.endpoint = acct.endpoint
+        self.api = context.creds.api
+        self.context = context
+        self.secret = context.creds.secret
+        self.endpoint = context.creds.endpoint
         self.req = requests.Session()
+        self.exchange = exchange
+        self.market = market
 
-    def call(self, method, query=None, json=True, **args):
+    def call(self, method, query=None, **args):
         """
         Generic interface to REST api
         :param method:  query name
         :param query:   dictionary of inputs
-        :param json:    if True return the raw results in json format
         :param args:    keyword arguments added to the payload
         :return:
         """
@@ -55,24 +59,19 @@ class Coinigy:
             print(res.json()['error'])
             return
 
-        if json:
-            return res.json()
-        return pd.DataFrame(res.json()['data'])
+        return res.json()
 
-
-    def data(self, exchange, market, data_type):
+    def data(self, data_type):
         """
         Common wrapper for data related queries
-        :param exchange:
-        :param market:
         :param data_type:
             currently supported are 'history', 'bids', 'asks', 'orders'
         :return:
         """
-        data = self.call('data',
-                         exchange_code=exchange,
-                         exchange_market=market,
-                         type=data_type)['data']
+        self.check_missing_parameter(data_type, "exchange")
+        self.check_missing_parameter(data_type, "market")
+
+        data = self.call('data', type=data_type)['data']
         res = dict()
 
         for key in ['history', 'bids', 'asks']:
@@ -99,10 +98,6 @@ class Coinigy:
 
     # Custom methods
 
-    def push_notifications(self):
-        """List any unshown alerts or trade notifications"""
-        return self.api.call('pushNotifications')
-
     def alerts(self):
         """List all allerts"""
         all_alerts = self.api.call('alerts')
@@ -110,29 +105,26 @@ class Coinigy:
         alert_history = pd.DataFrame(all_alerts['alert_history'])
         return {"open_alerts": open_alerts, "alert_history": alert_history}
 
-    def markets(self, exchange):
+    def markets(self):
         """List markets supported by exchange"""
-        return self.api.call('markets', exchange_code=exchange)
+        self.check_missing_parameter("markets", "exchange")
+        return self.call('markets', exchange_code=self.exchange)
 
-    def history(self, exchange, market):
+    def history(self):
         """Market history"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='history')
+        return self.data(data_type='history')
 
-    def asks(self, exchange, market):
+    def asks(self):
         """Asks"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='asks')
+        return self.api.data(data_type='asks')
 
-    def bids(self, exchange, market):
+    def bids(self):
         """Bids"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='bids')
+        return self.api.data(data_type='bids')
 
-    def allorders(self, exchange, market):
+    def allorders(self):
         """Orders"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='orders')
+        return self.api.data(data_type='orders')
 
     def news_feed(self):
         """Retrieve news feed"""
@@ -151,11 +143,14 @@ class Coinigy:
         """Refreshes the balance backend"""
         return self.api.call('refreshBalance')
 
-    def add_alert(self, exchange, market, price, note):
+    def add_alert(self, price, note):
         """Add an alert"""
+        self.check_missing_parameter("add_alert", "exchange")
+        self.check_missing_parameter("add_alert", "market")
+
         return self.api.call('addAlert',
-                             exch_code=exchange,
-                             market_name=market,
+                             exch_code=self.exchange,
+                             market_name=self.market,
                              alert_price=price,
                              alert_note=note)['notifications']
 
@@ -164,15 +159,18 @@ class Coinigy:
         return self.api.call('deleteAlert',
                              alert_id=alert_id)['notifications']
 
-    def add_order(self, auth_id, exch_id, mkt_id, order_type_id,
-                  price_type_id, limit_price, stop_price, order_quantity):
+    def add_order(self, auth_id, order_type_id, price_type_id,
+                  limit_price, stop_price, order_quantity):
         """Add an order
         ****UNTESTED!****
         """
+        self.check_missing_parameter("add_order", "exchange")
+        self.check_missing_parameter("add_order", "market")
+
         return self.api.call('addOrder',
                              auth_id=auth_id,
-                             exch_id=exch_id,
-                             mkt_id=mkt_id,
+                             exch_id=self.exchange,
+                             mkt_id=self.market,
                              order_type_id=order_type_id,
                              price_type_id=price_type_id,
                              limit_price=limit_price,

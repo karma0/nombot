@@ -33,3 +33,10 @@ class Conf:
             return self.data["api"]["calls"]
         except:
             raise Exception(f"Couldn't find call list for APIs")
+
+    def get_api(self):
+        """Returns the API configuration"""
+        try:
+            return self.data["api"]
+        except:
+            raise Exception(f"Couldn't find the API configuration")
