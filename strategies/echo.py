@@ -1,18 +1,19 @@
 """
-Simple Market Maker strategy
+Simple echo strategy to output an "ECHO"
 """
 
 from strategies.strategy import IStrategy
 from algorithms.echo import echo
 
 
-class MarketMaker(IStrategy):
-    """Market Maker Strategy imolementation"""
+class Echo(IStrategy):
+    """Echo Strategy implementation"""
     def bind(self, context):
         """
         Bind the strategy to the middleware pipeline,
         returning the context
         """
-        echo("ALGO!")
-        # currently, just a pass-through
+        echo("ECHO!")
+
+        # just a pass-through
         return context

@@ -3,15 +3,16 @@ Context for passing through middleware modules
 """
 
 
-class Context:
+class Context(dict):
     """
-    Context for middleware pipeline
+    We want our context to act like a dictionary, but references to work with
+    dot-notation.
     """
-    pass
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
 
 
-def build_context(apicalls):
+def build_context(api_call_results):
     """Assemble and return a context"""
-    ctx = Context()
-    for call in apicalls.keys():
-        ctx.__setattr__(call, apicalls[call])
+    return Context(api_call_results)

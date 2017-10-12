@@ -2,164 +2,170 @@
 Generic API Adapter
 """
 
-from collections import namedtuple
 import abc
-import pandas as pd
+
+from factory import Creator
+from api.context import AllApiContexts
+from api.result_types import RESULT_TYPES
 
 
-Alerts = namedtuple('Alerts', ('open_alerts', 'alert_history'))
+class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
+    """Generator of ApiAdapters"""
+    def _factory_method(self):
+        return ApiAdapter()
 
 
-class ApiAdapter:
-    """Adapter for all IApi implementations"""
-    def __init__(self, creds, Api):
-        self.api = Api(creds)
+class ApisAdapter:
+    """Adapter of adapters for all API instantiations"""
+    def __init__(self, conf, api_class):
+        self.apis = []  # type: list
 
-    def accounts(self):
-        """Returns a list of accounts"""
-        return self.api.request('accounts')
+        # Extract configuration necessary to generate api adapters
+        api_conf = conf.get_api()
+        exchanges = getattr(api_conf, "exchanges", [])
+        currencies = getattr(api_conf, "currencies", [])
 
-    def activity(self):
-        """Returns activity history"""
-        return self.api.request('activity')
+        exch_curr = []
+        for exch in exchanges:
+            for curr in currencies:
+                exch_curr.append((exch, curr))
 
-    def balances(self):
-        """Returns balances on accounts"""
-        return self.api.request('balances')
+        if exch_curr:
+            for val_pair in exch_curr:
+                self.create_api_adapter(conf, api_class, *val_pair)
+        else:
+            self.create_api_adapter(conf, api_class)
 
-    def push_notifications(self):
-        """List any unshown alerts or trade notifications"""
-        return self.api.request('pushNotifications')
+    def create_api_adapter(self, conf, api_class, exchange=None, market=None):
+        """Create and return an api adapter"""
+        api = ApiAdapterFactory()
+        api.product.interface(conf, api_class, exchange, market)
+        self.apis.append(api.product)
 
-    def orders(self):
-        """List open orders"""
-        return self.api.request('orders')
+    def run(self, callback):
+        """Executed on startup of application"""
+        for api in self.apis:
+            api.run(callback)
 
-    def alerts(self):
-        """List all allerts"""
-        all_alerts = self.api.request('alerts')
-        open_alerts = pd.DataFrame(all_alerts['open_alerts'])
-        alert_history = pd.DataFrame(all_alerts['alert_history'])
-        return Alerts(open_alerts=open_alerts, alert_history=alert_history)
+    def shutdown(self):
+        """Executed on shutdown of application"""
+        for api in self.apis:
+            api.shutdown()
 
-    def exchanges(self):
-        """Show accepted exchanges"""
-        return self.api.request('exchanges')
 
-    def markets(self, exchange):
-        """List markets supported by exchange"""
-        return self.api.request('markets', exchange_code=exchange)
+class ApiProduct:  # pylint: disable=too-few-public-methods
+    """ApiAdapterFactory Product interface"""
+    def __init__(self):
+        self.api_class = None
+        self.name = None
+        self.exchange = None
+        self.market = None
+        self.calls = None
+        self.api = None
+        self.api_context = None
 
-    def history(self, exchange, market):
-        """Market history"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='history')
+    def interface(self, conf, api_class, exchange=None, market=None):
+        """Implement the interface for the adapter object"""
+        self.api_class = api_class
+        self.name = api_class.name
+        self.exchange = exchange
+        self.market = market
+        self.calls = conf.get_api_calls()
+        self.api = None
+        self.api_context = AllApiContexts().get_or_create_context(self.name)
+        self.api_context.creds = conf.get_api_credentials(self.name)
 
-    def asks(self, exchange, market):
-        """Asks"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='asks')
 
-    def bids(self, exchange, market):
-        """Bids"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='bids')
+class ApiAdapter(ApiProduct):
+    """Adapter for any IApi implementations"""
+    def run(self, callback):
+        """Executed on startup of application"""
+        self.api = self.api_class(self.api_context)
+        callback({call: self.call(call) for call in self.calls})
 
-    def orders(self, exchange, market):
-        """Orders"""
-        return self.api.data(exchange=exchange, market=market,
-                             data_type='orders')
+    def shutdown(self):
+        """Executed on shutdown of application"""
+        self.api.shutdown()
 
-    def news_feed(self):
-        """Retrieve news feed"""
-        dat = self.api.request('newsFeed')
-        dat.timestamp = pd.to_datetime(dat.timestamp)
-        dat.set_index('timestamp', inplace=True)
-        return dat
+    def call(self, call):
+        """Executed on startup of application"""
+        method = getattr(self.api, call, None)
+        if callable(method):
+            return self.generate_result(method(), call)
+        return self.generate_result(self.api.call(call), call)
 
-    def order_types(self):
-        """List supported order types"""
-        dat = self.api.request('orderTypes')['data']
-        return dict(order_types=pd.DataFrame.from_records(dat['order_types']),
-                    price_types=pd.DataFrame.from_records(dat['price_types']))
+    def generate_result(self, result, callname):
+        """Generate a results object for delivery to the context object"""
+        # Retrieve path from API class
+        try:
+            path = self.api.paths[callname]
+        except:
+            raise Exception(f"Could not retrieve path for {callname}")
 
-    def refresh_balance(self):
-        """Refreshes the balance backend"""
-        return self.api.request('refreshBalance')
+        # Parse the path to the data
+        idx = result
+        count = 0
+        try:
+            for route in path.split('.'):
+                idx = idx[route]
+                count += 1
+        except:
+            raise Exception(f"Failed to find route ({path}) in part {count} \
+                            for results:\n{result}")
 
-    def add_alert(self, exchange, market, price, note):
-        """Add an alert"""
-        return self.api.request('addAlert',
-                                exch_code=exchange,
-                                market_name=market,
-                                alert_price=price,
-                                alert_note=note)['notifications']
+        # Generate the result object from the result_type
+        try:
+            if isinstance(idx, dict):
+                return [RESULT_TYPES[callname](**r) for r in idx]
+            elif isinstance(idx, str):
+                return [RESULT_TYPES[callname](idx)]
+            return [RESULT_TYPES[callname](**r) for r in idx]
+        except:
+            raise Exception(f"Could not parse result(s) to object {callname} \
+                            for results:\n{idx}")
 
-    def delete_alert(self, alert_id):
-        """Delete an alert"""
-        return self.api.request('deleteAlert',
-                                alert_id=alert_id)['notifications']
 
-    def add_order(self, auth_id, exch_id, mkt_id, order_type_id,
-                  price_type_id, limit_price, stop_price, order_quantity):
-        """Add an order
-        ****UNTESTED!****
-        """
-        return self.api.request('addOrder',
-                                auth_id=auth_id,
-                                exch_id=exch_id,
-                                mkt_id=mkt_id,
-                                order_type_id=order_type_id,
-                                price_type_id=price_type_id,
-                                limit_price=limit_price,
-                                stop_price=stop_price,
-                                order_quantity=order_quantity)
+class ApiErrorMixin:
+    """Generic functions for performing validation and handling errors"""
+    def check_missing_parameter(self, call, parameter):
+        """Error on missing parameter to call"""
+        if hasattr(self, parameter) and not getattr(self, parameter) is None:
+            return
 
-    def cancel_order(self, order_id):
-        """Cancel an order"""
-        return self.api.request('cancelOrder', internal_order_id=order_id)
+        raise Exception(f"Error: in order to retreive {call} from the API, \
+                {self.name} requires {parameter} to be passed in.")
 
-    def balance_history(self, date):
-        """
-        NB: the timestamp columns is the time when the account was last
-            snapshot, not the time the balances were effectively refreshed
-        :param date:    date str in format YYYY-MM-DD
-        :return:        a view of the acccount balances as of the date provided
-        """
-        balhist = pd.DataFrame.from_records(
-            self.api.request('balanceHistory',
-                             date=date)['data']['balance_history'])
-        if balhist.empty:
-            return balhist
-        acct = self.accounts()[['auth_id', 'exch_name']]
-        return pd.merge(balhist, acct, on='auth_id', how='left')
+    def check_for_errors(self, response):
+        """Validates that an error hasn't occurred"""
+        pass
 
 
 class IApi:
     """Interface to an Api implementation"""
-    def __init__(self, acct):
-        self.api = acct.api
-        self.secret = acct.secret
-        self.endpoint = acct.endpoint
+    # Use name to create a name for your api interface, and use the same
+    #  name in your config
+    name = "default"
+    paths = None
+
+    def shutdown(self):
+        """Override to perform any shutdown necessary"""
+        pass
 
     @abc.abstractmethod
-    def request(self, call, query=None, **args):
+    def call(self, method, query=None, **args):
         """
         Generic interface to REST api
         :param method:  query name
         :param query:   dictionary of inputs
-        :param json:    if True return the raw results in json format
         :param args:    keyword arguments added to the payload
         :return:
         """
         pass
 
     @abc.abstractmethod
-    def data(self, exchange, market, data_type):
+    def data(self, data_type):
         """
         Common wrapper for data related queries
-        :param exchange:
-        :param market:
         :param data_type:
             currently supported are 'history', 'bids', 'asks', 'orders'
         :return:

@@ -107,3 +107,6 @@ config.json
 archive
 *.bak
 backup
+
+# neomake
+.*@neomake*

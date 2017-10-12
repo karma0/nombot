@@ -13,20 +13,29 @@ class Strategy:
     Maintain a reference to a Strategy object.
     """
 
-    def __init__(self):
-        self._strategies = []  # type: list
-
-    def add_strategy(self, strategy):
-        """Add strategy to the list of middlewares"""
-        self._strategies.append(strategy)
+    def __init__(self, *strategies):
+        """Create a strategy using the IStrategy implementation passed in"""
+        self.middleware = strategies
+        for ware in self.middleware:
+            ware.poststartup()
 
     def execute(self, context):
-        """
-        Execute the strategies on the given context
-        """
-        for strat in self._strategies:
-            context = strat.bind(context)
+        """Execute the strategies on the given context"""
+        for ware in self.middleware:
+            ware.premessage(context)
+            context = ware.bind(context)
+            ware.postmessage(context)
         return context
+
+    def _shutdown(self):
+        pass
+
+    def shutdown(self):
+        """Perform cleanup! We're goin' down!!!"""
+        for ware in self.middleware:
+            ware.preshutdown()
+            self._shutdown()
+            ware.postshutdown()
 
 
 class IStrategy(metaclass=abc.ABCMeta):
@@ -40,7 +49,22 @@ class IStrategy(metaclass=abc.ABCMeta):
         """Bind to the context"""
         pass
 
-    @abc.abstractmethod
-    def shutdown(self):
-        """Use this to tie up any loose ends"""
+    def poststartup(self):
+        """Implement this for post-initialization"""
+        pass
+
+    def preshutdown(self):
+        """Implement this for pre-shutdown cleanup"""
+        pass
+
+    def postshutdown(self):
+        """Implement this for post-shutdown cleanup"""
+        pass
+
+    def premessage(self, context):
+        """Implement this to run something prior to receiving a message"""
+        pass
+
+    def postmessage(self, context):
+        """Implement this to run something after receiving a message"""
         pass

@@ -3,11 +3,12 @@ Trading bot
 """
 
 from api.coinigy import Coinigy
-from builder import Build
+from builder import AppBuilder
 from config import Conf
 
 from strategies.strategy import Strategy
-from strategies.mm import MarketMaker
+from strategies.print import Print
+from strategies.echo import Echo
 
 
 def main():
@@ -16,9 +17,8 @@ def main():
     conf = Conf()
 
     # Roll out pipeline
-    strat = Strategy()
-    strat.add_strategy(MarketMaker())
-    impl = Pipeline(conf, Coinigy, strategy)
+    strat = Strategy(Print(), Echo())
+    impl = AppBuilder(conf, Coinigy, strat)
 
     # Run
     impl.run()
