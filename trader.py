@@ -8,6 +8,7 @@ from config import Conf
 
 from strategies.strategy import Strategy
 from strategies.print import Print
+from strategies.echo import Echo
 
 
 def main():
@@ -16,7 +17,7 @@ def main():
     conf = Conf()
 
     # Roll out pipeline
-    strat = Strategy(Print())
+    strat = Strategy(Print(), Echo())
     impl = AppBuilder(conf, Coinigy, strat)
 
     # Run

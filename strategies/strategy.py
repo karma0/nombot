@@ -13,16 +13,18 @@ class Strategy:
     Maintain a reference to a Strategy object.
     """
 
-    def __init__(self, strategy):
+    def __init__(self, *strategies):
         """Create a strategy using the IStrategy implementation passed in"""
-        self.strategy = strategy
-        self.strategy.poststartup()
+        self.middleware = strategies
+        for ware in self.middleware:
+            ware.poststartup()
 
     def execute(self, context):
         """Execute the strategies on the given context"""
-        self.strategy.premessage(context)
-        context = self.strategy.bind(context)
-        self.strategy.postmessage(context)
+        for ware in self.middleware:
+            ware.premessage(context)
+            context = ware.bind(context)
+            ware.postmessage(context)
         return context
 
     def _shutdown(self):
@@ -30,9 +32,10 @@ class Strategy:
 
     def shutdown(self):
         """Perform cleanup! We're goin' down!!!"""
-        self.strategy.preshutdown()
-        self._shutdown()
-        self.strategy.postshutdown()
+        for ware in self.middleware:
+            ware.preshutdown()
+            self._shutdown()
+            ware.postshutdown()
 
 
 class IStrategy(metaclass=abc.ABCMeta):
