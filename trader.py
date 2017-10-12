@@ -7,7 +7,7 @@ from builder import AppBuilder
 from config import Conf
 
 from strategies.strategy import Strategy
-from strategies.mm import MarketMaker
+from strategies.echo import Echo
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
     conf = Conf()
 
     # Roll out pipeline
-    strat = Strategy(MarketMaker())
+    strat = Strategy(Echo())
     impl = AppBuilder(conf, Coinigy, strat)
 
     # Run
