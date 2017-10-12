@@ -14,6 +14,10 @@ class Coinigy:
     """
     name = "coinigy"
 
+    paths = {
+        "accounts": "data"
+    }
+
     def __init__(self, acct):
         """Launched by Api when we're ready to connect"""
         self.api = acct.api
@@ -21,7 +25,7 @@ class Coinigy:
         self.endpoint = acct.endpoint
         self.req = requests.Session()
 
-    def call(self, method, query=None, json=False, **args):
+    def call(self, method, query=None, json=True, **args):
         """
         Generic interface to REST api
         :param method:  query name
@@ -54,6 +58,7 @@ class Coinigy:
         if json:
             return res.json()
         return pd.DataFrame(res.json()['data'])
+
 
     def data(self, exchange, market, data_type):
         """

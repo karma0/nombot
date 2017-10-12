@@ -4,7 +4,8 @@ Generic API Adapter
 
 from collections import namedtuple
 import abc
-import pandas as pd
+
+from api.result_types import RESULT_TYPES
 
 
 class ApiAdapter:
@@ -24,14 +25,45 @@ class ApiAdapter:
     def run(self, callback):
         """Executed on startup of application"""
         self.api = self.Api(self.creds)
-        callback([self.api.call(call) for call in self.calls])
+        callback({call: self.call(call) for call in self.calls})
 
     def shutdown(self):
         """Executed on startup of application"""
         self.api.shutdown()
 
-    def call(self):
+    def call(self, call):
         """Executed on startup of application"""
+        return self.generate_result(self.api.call(call), call)
+
+    def generate_result(self, result, callname):
+        """Generate a results object for delivery to the context object"""
+        # Retrieve path from API class
+        try:
+            path = self.api.paths[callname]
+        except:
+            raise Exception(f"Could not retrieve path for {callname}")
+
+        # Parse the path to the data
+        idx = result
+        count = 0
+        try:
+            for route in path.split('.'):
+                idx = idx[route]
+                count += 1
+        except:
+            raise Exception(f"Failed to find route ({path}) in part {count} \
+                            for results:\n{result}")
+
+        # Generate the result object from the result_type
+        try:
+            if isinstance(idx, dict):
+                return [RESULT_TYPES[callname](**r) for r in idx]
+            elif isinstance(idx, str):
+                return [RESULT_TYPES[callname](idx)]
+            return [RESULT_TYPES[callname](**r) for r in idx]
+        except:
+            raise Exception(f"Could not parse result(s) to object {callname} \
+                            for results:\n{idx}")
 
 
 class IApi:
@@ -39,6 +71,7 @@ class IApi:
     # Use name to create a name for your api interface, and use the same
     #  name in your config
     name = "default"
+    paths = None
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""
