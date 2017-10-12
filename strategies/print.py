@@ -1,19 +1,19 @@
 """
-Simple echo strategy to output an "ECHO"
+Simple context display strategy
 """
 
 from strategies.strategy import IStrategy
 from algorithms.echo import echo
 
 
-class Echo(IStrategy):
-    """Echo Strategy implementation"""
+class Print(IStrategy):
+    """Print Strategy implementation"""
     def bind(self, context):
         """
         Bind the strategy to the middleware pipeline,
         returning the context
         """
-        echo("ECHO!")
+        echo(context)
 
         # just a pass-through
         return context
