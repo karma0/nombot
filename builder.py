@@ -5,7 +5,7 @@ from api.base import ApiAdapter
 from context import build_context
 
 
-class AppBuider:
+class AppBuilder:
     """Class that assembles and runs the application"""
     def __init__(self, conf, Api, strategy):
         self.conf = conf
