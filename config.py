@@ -23,9 +23,9 @@ class Conf:
         """Returns a Credentials object for API access"""
         try:
             return Credentials(
-                api=self.data["api"]["service"][apiname]["apiKey"],
-                secret=self.data["api"]["service"][apiname]["apiSecret"],
-                endpoint=self.data["api"]["service"][apiname]["endpoint"]
+                api=self.data["api"]["services"][apiname]["apiKey"],
+                secret=self.data["api"]["services"][apiname]["apiSecret"],
+                endpoint=self.data["api"]["services"][apiname]["endpoint"]
                 )
         except:
             raise Exception(f"Couldn't find credentials for API: {apiname}")

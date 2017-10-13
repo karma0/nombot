@@ -1,8 +1,15 @@
 {
   "api": {
-    "apiKey": "xxx",
-    "apiSecret": "xxx",
-    "endpoint": "https://api.coinigy.com/api/v1"
+    "calls": [
+      "accounts"
+    ],
+    "services": {
+      "coinigy": {
+        "apiKey": "xxx",
+        "apiSecret": "xxx",
+        "endpoint": "https://api.coinigy.com/api/v1"
+      }
+    }
   },
 
   "subscriptions": {
