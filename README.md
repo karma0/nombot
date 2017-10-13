@@ -22,15 +22,17 @@ able to pay for development services, that will solve the second.
 ## Key Features
 
 ### Exchanges
-* Extensible for any exchange _(currently supports coinigy)_
+* Extensible for any exchange _(currently only supports coinigy)_.
 * Exchange helper facilities; _connection pooling, websockets, threading, etc._
-* Mutiple exchange connectivity allowing for arbitrage _(coming soon)_.
-* Forward-compatible interfaces _(WIP)_
+  _(coming soon)_
+* Mutiple exchange connectivity allowing for arbitrage.
+* Strive toward forward-compatible interfaces.
 
 ### Currencies
-* Forward-compatible; _if the exchange supports it, it will work_. _(WIP)_
-* All currencies supported. _(WIP)_
-* Wallet support, allowing for automated coin transfers. _(coming soon)_
+_(coming soon)_
+* All currencies possible (with some configuration).
+* Strive towards forward-compatible; _if the exchange supports it, it will work_.
+* Wallet support, allowing for automated coin transfers.
 
 ### Algorithms
 * Implementation is independent of strategy, allowing for maximal reuse,
@@ -41,21 +43,23 @@ able to pay for development services, that will solve the second.
 
 ### Strategies
 * "Plugable" _strategy_ architecture using `IStrategy` inheritance.
+* "Stackable" architecture allows you to isolate grouped functionality for reuse.
 * Utilizes a middleware pipeline for processing.
 * Shared context objects allow for maximum versatility in complex scenarios.
-* Utilization of algorithms as backend libraries (strategy equates to "business logic").
+* Utilization of algorithms as backend functional libraries (strategy equates to "business logic").
 * Automatic configuration pass-through.
 
 ### Configuration
 * Flexible modularized configuration using JSON.
 * C-style comment support.
-* Configuration objects are protected using `namedtuple` containers.
+* Configuration objects are protected immutable, using `namedtuple` containers.
 * Configuration object parameters exist as object attributes: `conf.var1`.
-* Configuration is namespaced, allowing for hierarchical configuration.
+* Configuration is namespaced, allowing for hierarchical configuration
+  passthrough.
 
 ### Security
-* Namespaced configuration will greatly reduce your chance of information
-  leakage.
+* Namespaced immutable configuration will greatly reduce your chance of information
+  leakage and manipulation.
 * File system storage & security (requires careful consideration of file permissions; see
   install notes below).
 
@@ -87,21 +91,19 @@ git pull
 ### Configuration
 1. Create your strategy class, using any available algorithms, or creating your
    own algorithms.
-2. Create the configuration required for your strategy, exchange(s), etc. based
-   on the `config.json.example` file in the working directory.
+2. Copy `config.json.example` to `config.json` and execute `chmod 600 config.json`.
+3. Change the configuration required for your strategy, exchange(s), API calls, etc.
+   based on the examples.
 
 
 ### Execution
 
 ```bash
-python ./trader.py
+./trader.py
 ```
 
 ## Contributing
 
 Options:
 1. Follow the instructions here: https://help.github.com/articles/fork-a-repo/
-2. Submit an issue [here](https://help.github.com/articles/fork-a-repo/).
-
-
-
+2. Submit an issue or feature request [here](https://help.github.com/articles/fork-a-repo/).

@@ -17,7 +17,7 @@ class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
 
 class ApisAdapter:
     """Adapter of adapters for all API instantiations"""
-    def __init__(self, conf, api_class):
+    def __init__(self, conf, api_classes):
         self.apis = []  # type: list
 
         # Extract configuration necessary to generate api adapters
@@ -32,9 +32,11 @@ class ApisAdapter:
 
         if exch_curr:
             for val_pair in exch_curr:
-                self.create_api_adapter(conf, api_class, *val_pair)
+                for api_class in api_classes:
+                    self.create_api_adapter(conf, api_class, *val_pair)
         else:
-            self.create_api_adapter(conf, api_class)
+            for api_class in api_classes:
+                self.create_api_adapter(conf, api_class)
 
     def create_api_adapter(self, conf, api_class, exchange=None, market=None):
         """Create and return an api adapter"""
