@@ -4,7 +4,7 @@
 Trading bot
 """
 
-from api.coinigy import Coinigy
+from api.sites.coinigy import Coinigy
 from builder import AppBuilder
 from config import Conf
 
