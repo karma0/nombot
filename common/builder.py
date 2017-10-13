@@ -7,9 +7,8 @@ from common.context import build_context
 
 class AppBuilder:
     """Class that assembles and runs the application"""
-    def __init__(self, conf, api_classes, strategy):
-        self.conf = conf
-        self.api = ApisAdapter(self.conf, api_classes)
+    def __init__(self, api_classes, strategy):
+        self.api = ApisAdapter(api_classes)
         self.strat = strategy
 
     def run(self):

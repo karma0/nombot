@@ -7,6 +7,7 @@ import abc
 from utils.factory import Creator
 from api.context import AllApiContexts
 from api.result_types import RESULT_TYPES
+from common.config import Conf
 
 
 class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
@@ -17,11 +18,12 @@ class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
 
 class ApisAdapter:
     """Adapter of adapters for all API instantiations"""
-    def __init__(self, conf, api_classes):
+    def __init__(self, api_classes):
         self.apis = []  # type: list
 
         # Extract configuration necessary to generate api adapters
-        api_conf = conf.get_api()
+        self.conf = Conf()
+        api_conf = self.conf.get_api()
         exchanges = getattr(api_conf, "exchanges", [])
         currencies = getattr(api_conf, "currencies", [])
 
@@ -33,15 +35,15 @@ class ApisAdapter:
         if exch_curr:
             for val_pair in exch_curr:
                 for api_class in api_classes:
-                    self.create_api_adapter(conf, api_class, *val_pair)
+                    self.create_api_adapter(api_class, *val_pair)
         else:
             for api_class in api_classes:
-                self.create_api_adapter(conf, api_class)
+                self.create_api_adapter(api_class)
 
-    def create_api_adapter(self, conf, api_class, exchange=None, market=None):
+    def create_api_adapter(self, api_class, exchange=None, market=None):
         """Create and return an api adapter"""
         api = ApiAdapterFactory()
-        api.product.interface(conf, api_class, exchange, market)
+        api.product.interface(api_class, exchange, market)
         self.apis.append(api.product)
 
     def run(self, callback):
@@ -65,17 +67,18 @@ class ApiProduct:  # pylint: disable=too-few-public-methods
         self.calls = None
         self.api = None
         self.api_context = None
+        self.conf = Conf()
 
-    def interface(self, conf, api_class, exchange=None, market=None):
+    def interface(self, api_class, exchange=None, market=None):
         """Implement the interface for the adapter object"""
         self.api_class = api_class
         self.name = api_class.name
         self.exchange = exchange
         self.market = market
-        self.calls = conf.get_api_calls()
+        self.calls = self.conf.get_api_calls()
         self.api = None
         self.api_context = AllApiContexts().get(self.name)
-        self.api_context.creds = conf.get_api_credentials(self.name)
+        self.api_context.creds = self.conf.get_api_credentials(self.name)
 
 
 class ApiAdapter(ApiProduct):
