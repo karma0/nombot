@@ -9,7 +9,10 @@ Credentials = namedtuple('Credentials', ('api', 'secret', 'endpoint'))
 
 class Conf:
     """Loads a sane configuration"""
-    def __init__(self, filename="config.json"):
+    def __init__(self, filename=None):
+        if filename is None:
+            filename = "config.json"
+
         try:
             with open(filename) as data_file:
                 self.data = json.load(data_file)

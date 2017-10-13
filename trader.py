@@ -4,7 +4,7 @@
 Trading bot
 """
 
-from api.sites.coinigy import Coinigy
+from api.services.coinigy import Coinigy
 from builder import AppBuilder
 from config import Conf
 
@@ -13,14 +13,14 @@ from strategies.print import Print
 from strategies.echo import Echo
 
 
-def main():
+def main(strategies=[Print(), Echo()], apiclasses=[Coinigy], configfile=None):
     """Main routine"""
     # Grab configuration
-    conf = Conf()
+    conf = Conf(filename=configfile)
 
     # Roll out pipeline
-    strat = Strategy(Print(), Echo())
-    impl = AppBuilder(conf, Coinigy, strat)
+    strat = Strategy(*strategies)
+    impl = AppBuilder(conf, apiclasses, strat)
 
     # Run
     impl.run()
