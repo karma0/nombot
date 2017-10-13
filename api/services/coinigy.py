@@ -3,7 +3,7 @@
 
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-import requests
+from api.requestor import Req
 
 from common.log import LoggerMixin
 from api.base import IApi, ApiErrorMixin
@@ -27,7 +27,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
         self.context = context
         self.secret = context.creds.secret
         self.endpoint = context.creds.endpoint
-        self.req = requests.Session()
+        self.req = Req().get_req_obj()
         self.exchange = exchange
         self.market = market
         self.create_logger()
