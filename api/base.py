@@ -74,7 +74,7 @@ class ApiProduct:  # pylint: disable=too-few-public-methods
         self.market = market
         self.calls = conf.get_api_calls()
         self.api = None
-        self.api_context = AllApiContexts().get_or_create_context(self.name)
+        self.api_context = AllApiContexts().get(self.name)
         self.api_context.creds = conf.get_api_credentials(self.name)
 
 

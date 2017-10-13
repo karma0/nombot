@@ -53,4 +53,4 @@ class LoggerMixin:
     """Mixin to be used to simplify the logging interface"""
     def create_logger(self):
         """Generates a logger instance from the singleton"""
-        self.log = Logger().get_or_create_logger(self.name)
+        self.log = Logger().get(self.name)
