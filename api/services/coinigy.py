@@ -3,19 +3,22 @@
 
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-from api.requestor import Req
 
 from common.log import LoggerMixin
+from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
+from api.websock import SockMixin
 
 
-class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
+class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
         This class implements coinigy's REST api as documented in the
         documentation available at:
         https://github.com/coinigy/api
     """
     name = "coinigy"
+    endpoint = "https://api.coinigy.com/api/v1"
+    wsendpoint = "wss://sc-02.coinigy.com/socketcluster/"
 
     paths = {
         "accounts": "data"
@@ -26,7 +29,6 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
         self.api = context.creds.api
         self.context = context
         self.secret = context.creds.secret
-        self.endpoint = context.creds.endpoint
         self.req = Req().get_req_obj()
         self.exchange = exchange
         self.market = market
