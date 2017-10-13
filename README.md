@@ -64,8 +64,9 @@ _(coming soon)_
   install notes below).
 
 ### Coming soon...
+* Module-level logging.
 * GRPC strategy to allow parallel processing in microservices environments.
-* Expansion to World Coin Market's top-20 exchanges.
+* API expansion to World Coin Market's top-20 exchanges.
 * Back testing and supporting documentation.
 * Database integration.
 * More documentation around creating exchanges, algorithms, and strategies.
