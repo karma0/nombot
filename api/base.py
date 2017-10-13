@@ -4,7 +4,7 @@ Generic API Adapter
 
 import abc
 
-from factory import Creator
+from utils.factory import Creator
 from api.context import AllApiContexts
 from api.result_types import RESULT_TYPES
 

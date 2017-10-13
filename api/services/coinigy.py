@@ -5,10 +5,11 @@ import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
 import requests
 
+from common.log import LoggerMixin
 from api.base import IApi, ApiErrorMixin
 
 
-class Coinigy(IApi, ApiErrorMixin):
+class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
     """
         This class implements coinigy's REST api as documented in the
         documentation available at:
@@ -29,6 +30,7 @@ class Coinigy(IApi, ApiErrorMixin):
         self.req = requests.Session()
         self.exchange = exchange
         self.market = market
+        self.create_logger()
 
     def call(self, method, query=None, **args):
         """
@@ -50,13 +52,13 @@ class Coinigy(IApi, ApiErrorMixin):
         res = self.req.post(url, data=payload)
 
         if res.status_code > 299:
-            print(f"URL: {url}")
-            print(f"Payload: {payload}")
-            print(f"STATUS: {res.status_code}")
-            print(f"RESPONSE: {res.text}")
+            self.log.error(f"URL: {url}")
+            self.log.error(f"Payload: {payload}")
+            self.log.error(f"STATUS: {res.status_code}")
+            self.log.error(f"RESPONSE: {res.text}")
             return
         elif 'error' in res.json().keys():
-            print(res.json()['error'])
+            self.log.error(res.json()['error'])
             return
 
         return res.json()

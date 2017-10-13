@@ -12,6 +12,21 @@
     }
   },
 
+  "logger": {
+    "level": "INFO",
+    "modules": {
+      "test": {
+        "level": "DEBUG"
+      },
+      "api": {
+        "level": "DEBUG"
+      },
+      "coinigy": {
+        "level": "WARNING"
+      }
+    }
+  },
+
   "subscriptions": {
     "trade": [
       "TRADE-OK--BTC--CNY",

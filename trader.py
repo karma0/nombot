@@ -5,8 +5,8 @@ Trading bot
 """
 
 from api.services.coinigy import Coinigy
-from builder import AppBuilder
-from config import Conf
+from common.builder import AppBuilder
+from common.config import Conf
 
 from strategies.strategy import Strategy
 from strategies.print import Print

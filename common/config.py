@@ -3,6 +3,8 @@
 from collections import namedtuple
 import json
 
+from common.log import Logger
+
 
 Credentials = namedtuple('Credentials', ('api', 'secret', 'endpoint'))
 
@@ -19,6 +21,9 @@ class Conf:
         except:
             raise Exception(f"Could not source config file: {filename}")
 
+        logger = Logger(self)
+        self.log = logger.get('confclass')
+
     def get_api_credentials(self, apiname):
         """Returns a Credentials object for API access"""
         try:
@@ -27,19 +32,29 @@ class Conf:
                 secret=self.data["api"]["services"][apiname]["apiSecret"],
                 endpoint=self.data["api"]["services"][apiname]["endpoint"]
                 )
-        except:
-            raise Exception(f"Couldn't find credentials for API: {apiname}")
+        except KeyError:
+            self.log.exc(f"Couldn't find credentials for API: {apiname}")
 
     def get_api_calls(self):
         """Returns a list of calls to the api to generate the context object"""
         try:
-            return self.data["api"]["calls"]
-        except:
-            raise Exception(f"Couldn't find call list for APIs")
+            return self.data["api"]["calls"].copy()
+        except KeyError:
+            self.log.exc(f"Couldn't find call list for APIs")
 
     def get_api(self):
         """Returns the API configuration"""
         try:
-            return self.data["api"]
-        except:
-            raise Exception(f"Couldn't find the API configuration")
+            return self.data["api"].copy()
+        except KeyError:
+            self.log.exc(f"Couldn't find the API configuration")
+
+    def get_logger(self, name=None):
+        """Return a logger configuration object"""
+        logconf = self.data["logger"].copy()
+        upd = logconf.pop('modules', None)
+        try:
+            logconf.update(upd[name])
+        except KeyError:
+            pass
+        return logconf
