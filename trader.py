@@ -20,7 +20,7 @@ def main(strategies=[Print(), Echo()], apiclasses=[Coinigy], configfile=None):
 
     # Roll out pipeline
     strat = Strategy(*strategies)
-    impl = AppBuilder(conf, apiclasses, strat)
+    impl = AppBuilder(apiclasses, strat)
 
     # Run
     impl.run()

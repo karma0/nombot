@@ -2,11 +2,20 @@
 Generic API Adapter
 """
 
+from collections import namedtuple
 import abc
 
 from utils.factory import Creator
 from api.context import AllApiContexts
 from api.result_types import RESULT_TYPES
+from api.websock import SockChannel
+from common.config import Conf
+
+
+class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
+    """Generator of WsAdapters"""
+    def _factory_method(self):
+        return WsAdapter()
 
 
 class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
@@ -15,16 +24,19 @@ class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
         return ApiAdapter()
 
 
-class ApisAdapter:
+class ApiMetaAdapter:
     """Adapter of adapters for all API instantiations"""
-    def __init__(self, conf, api_classes):
+    def __init__(self, api_classes):
         self.apis = []  # type: list
+        self.wsocks = []  # type: list
 
         # Extract configuration necessary to generate api adapters
-        api_conf = conf.get_api()
+        self.conf = Conf()
+        api_conf = self.conf.get_api()
         exchanges = getattr(api_conf, "exchanges", [])
         currencies = getattr(api_conf, "currencies", [])
 
+        # Setup exchange/currency/call adapters
         exch_curr = []
         for exch in exchanges:
             for curr in currencies:
@@ -33,29 +45,42 @@ class ApisAdapter:
         if exch_curr:
             for val_pair in exch_curr:
                 for api_class in api_classes:
-                    self.create_api_adapter(conf, api_class, *val_pair)
+                    self.create_api_adapter(api_class, *val_pair)
         else:
             for api_class in api_classes:
-                self.create_api_adapter(conf, api_class)
+                self.create_api_adapter(api_class)
 
-    def create_api_adapter(self, conf, api_class, exchange=None, market=None):
+        for api_class in api_classes:
+            self.create_ws_adapter(api_class)
+
+    def create_ws_adapter(self, api_class):
+        """Create and return an api adapter"""
+        api = WsAdapterFactory()
+        api.product.interface(api_class)
+        self.wsocks.append(api.product)
+
+    def create_api_adapter(self, api_class, exchange=None, market=None):
         """Create and return an api adapter"""
         api = ApiAdapterFactory()
-        api.product.interface(conf, api_class, exchange, market)
+        api.product.interface(api_class, exchange, market)
         self.apis.append(api.product)
 
     def run(self, callback):
         """Executed on startup of application"""
+        for wsock in self.wsocks:
+            wsock.run(callback)
         for api in self.apis:
             api.run(callback)
 
     def shutdown(self):
         """Executed on shutdown of application"""
+        for wsock in self.wsocks:
+            wsock.run()
         for api in self.apis:
             api.shutdown()
 
 
-class ApiProduct:  # pylint: disable=too-few-public-methods
+class ApiProduct:
     """ApiAdapterFactory Product interface"""
     def __init__(self):
         self.api_class = None
@@ -63,34 +88,66 @@ class ApiProduct:  # pylint: disable=too-few-public-methods
         self.exchange = None
         self.market = None
         self.calls = None
+        self.channels = None
         self.api = None
         self.api_context = None
+        self.conf = Conf()
+        self.rstypes = RESULT_TYPES.copy()
 
-    def interface(self, conf, api_class, exchange=None, market=None):
+    def interface(self, api_class, exchange=None, market=None):
         """Implement the interface for the adapter object"""
         self.api_class = api_class
         self.name = api_class.name
         self.exchange = exchange
         self.market = market
-        self.calls = conf.get_api_calls()
+        self.calls = self.conf.get_api_calls()
+        self.channels = self.conf.get_ws_subscriptions(self.name)
         self.api = None
         self.api_context = AllApiContexts().get(self.name)
-        self.api_context.creds = conf.get_api_credentials(self.name)
+        self.api_context.creds = self.conf.get_api_credentials(self.name)
 
-
-class ApiAdapter(ApiProduct):
-    """Adapter for any IApi implementations"""
-    def run(self, callback):
-        """Executed on startup of application"""
-        self.api = self.api_class(self.api_context)
-        callback({call: self.call(call) for call in self.calls})
+        try:
+            self.rstypes.update(self.api.result_types)
+        except AttributeError:
+            pass
 
     def shutdown(self):
         """Executed on shutdown of application"""
         self.api.shutdown()
 
-    def call(self, call):
+
+class WsAdapter(ApiProduct):
+    """Adapter for WebSockets"""
+    def run(self, callback):
+        """
+        Called by internal API subsystem to initialize websockets connections
+        in the API interface
+        """
+        self.api_context.callback = callback
+        self.api = self.api_class(self.api_context)
+
+        # Default response type
+        self.chanmsg = namedtuple(self.name, ("channel", "message"))
+
+        # Initialize websocket with channels
+        self.api.connect_ws(self.api.on_ws_connect,
+            [SockChannel(channel, res_type, callback) \
+                for channel, res_type in
+             self.conf.get_ws_subscriptions(self.name).items()]
+        )
+
+
+class ApiAdapter(ApiProduct):
+    """Adapter for any API implementations"""
+    def run(self, result_callback):
         """Executed on startup of application"""
+        self.api = self.api_class(self.api_context)
+
+        # schedule loop
+        result_callback({call: self.call(call) for call in self.calls})
+
+    def call(self, call):
+        """Executed on each scheduled iteration"""
         method = getattr(self.api, call, None)
         if callable(method):
             return self.generate_result(method(), call)
@@ -161,6 +218,13 @@ class IApi:
         :param query:   dictionary of inputs
         :param args:    keyword arguments added to the payload
         :return:
+        """
+        pass
+
+    @abc.abstractmethod
+    def on_ws_connect(self):
+        """
+        Called by the websocket mixin
         """
         pass
 

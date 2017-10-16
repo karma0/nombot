@@ -4,6 +4,25 @@ from collections import namedtuple as nt
 
 RESULT_TYPES = {
 
+    "channellist": nt("channellist", ("channel")),
+
+    "tradeMessage": nt("tradeMessage", (
+        "channel",
+        "exchId",
+        "exchange",
+        "label",
+        "market_history_id",
+        "marketid",
+        "price",
+        "quantity",
+        "time",
+        "time_local",
+        "timestamp",
+        "total",
+        "tradeid",
+        "type"
+    )),
+
     "accounts": nt("accounts", (
         "auth_id",
         "auth_key",
@@ -216,6 +235,7 @@ RESULT_TYPES = {
     )),
 
     "order": nt("order", (
+        "ordertype",
         "price",
         "quantity",
         "total"

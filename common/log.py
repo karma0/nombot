@@ -3,17 +3,14 @@
 from utils.factory import Creator
 from utils.singleton import Singleton
 from utils.logger import Logger as L
+from common.config import Conf
 
 
 class Logger(metaclass=Singleton):
     """Shared loggers singleton"""
-    def __init__(self, config=None):
+    def __init__(self):
+        self.conf = Conf()
         self.loggers = {}
-        if not hasattr(self, "conf"):
-            if not config is None:
-                self.conf = config
-            else:
-                raise Exception("No config ever provided to Logger")
 
     def get(self, name):
         """Creates a logger if one doesn't exist"""
@@ -24,7 +21,7 @@ class Logger(metaclass=Singleton):
 
     def create(self, name):
         """Creates a logger if one doesn't exist"""
-        self.loggers[name] = Log(name, self.conf)
+        self.loggers[name] = Log(name)
         return self.loggers[name]
 
 
@@ -32,9 +29,9 @@ class Log(L):
     """
     Facade for the logging facility.  See utils/logger.py for more information.
     """
-    def __init__(self, name, conf):
+    def __init__(self, name):
         self.name = name
-        self.conf = conf.get_logger(name)
+        self.conf = Conf().get_logger(name)
         self.level = self.conf["level"]
 
         self.basicConfig(self.level)

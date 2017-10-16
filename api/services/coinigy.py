@@ -1,33 +1,67 @@
 """Coinigy API Facade
 """
 
+import json
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-from api.requestor import Req
+
+from collections import namedtuple
 
 from common.log import LoggerMixin
+from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
+from api.websock import SockMixin, SockChannel
 
 
-class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
+class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
         This class implements coinigy's REST api as documented in the
         documentation available at:
         https://github.com/coinigy/api
     """
     name = "coinigy"
+    endpoint = "https://api.coinigy.com/api/v1"
+    wsendpoint = "wss://sc-02.coinigy.com/socketcluster/"
 
+    # A list of paths to the data for parsing
     paths = {
-        "accounts": "data"
+        "default": "data"
+    }
+
+    result_types = {
+        "accountMessage": namedtuple("accountMessage", (
+            "Data",
+            "MessageType"
+            )),
+        "Notification": namedtuple("Notification", (
+            "message",
+            "message_vars",
+            "notification_id",
+            "pinned",
+            "sound",
+            "sound_id",
+            "sound_override",
+            "style",
+            "time",
+            "title",
+            "title_vars",
+            "type"
+            ))
     }
 
     def __init__(self, context, exchange=None, market=None):
         """Launched by Api when we're ready to connect"""
-        self.api = context.creds.api
-        self.context = context
+        self.creds = { # used by the webservice API
+            "apiKey": context.creds.api,
+            "apiSecret": context.creds.secret
+        }
+        # Used by the REST API
         self.secret = context.creds.secret
-        self.endpoint = context.creds.endpoint
+        self.api = context.creds.api
+
+        self.context = context
         self.req = Req().get_req_obj()
+
         self.exchange = exchange
         self.market = market
         self.create_logger()
@@ -97,6 +131,51 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin):
                 res[key] = dat
 
         return res
+
+    def on_ws_connect(self):
+        """
+        Called by the websocket mixin
+        """
+        self.sock.emitack("channels", None, self.get_channels)
+
+    def get_channels(self, eventname, error, data):
+        """
+        Dynamically generate the websocket channels based on exchange and
+        currency configurations and what the server reports available.
+        """
+        if error:
+            raise Exception(error)
+        #try:
+        #    data = json.dumps(jsondata)
+        #except:
+        #    self.log.critical("Could not parse json from websocket")
+
+        self.all_chans = {}
+        for chan in data[0]:
+            self.all_chans[chan["channel"]] = False
+
+        for exch in self.context["conf"]["exchanges"]:
+            for curr1 in self.context["conf"]["currencies"]:
+                for curr2 in self.context["conf"]["currencies"]:
+                    for ortra in ["order", "trade"]:
+                        for chan in [
+                            f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
+                            f"{ortra}-{exch}--{curr2}--{curr1}".upper()
+                        ]:
+                            if chan in self.all_chans:
+                                self.all_chans[chan] = True
+        self.subscribed_chans = [k for k, v in self.all_chans.items() if v]
+
+        for chan in self.subscribed_chans:
+            if chan.startswith("ORDER"):
+                restype = "order"
+            elif chan.startswith("TRADE"):
+                restype = "tradeMessage"
+            self.channels.append(
+                    SockChannel(chan, restype, self.context.callback))
+
+        self.connect_channels()
+
 
     # Custom methods
 
