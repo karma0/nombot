@@ -24,10 +24,16 @@ class AllApiContexts(metaclass=Singleton):
     def create(self, apiname):
         """Creates a context for given API"""
         self.contexts[apiname] = ApiContext()
+        self.contexts[apiname].name = apiname
         conf = self.conf.get_api(apiname)
         conf["currencies"] = self.conf.get_currencies()
         self.contexts[apiname].populate(conf)
         return self.contexts[apiname]
+
+    def get_safe_contexts(self):
+        """Return sanitized contexts"""
+        return {c.name: c.sanitize() for k, c in self.contexts}
+
 
 class ApiContext(DotObj):
     """ApiContext"""
@@ -37,3 +43,6 @@ class ApiContext(DotObj):
         """Populates the context object"""
         print(f"CONTEXT->CONFIG: {conf}")
         self.conf = conf
+
+    def return_sanitized(self):
+        pass

@@ -1,11 +1,10 @@
 """Coinigy API Facade
 """
 
-import json
+from collections import namedtuple as nt
+
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-
-from collections import namedtuple
 
 from common.log import LoggerMixin
 from api.requestor import Req
@@ -20,20 +19,40 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         https://github.com/coinigy/api
     """
     name = "coinigy"
-    endpoint = "https://api.coinigy.com/api/v1"
-    wsendpoint = "wss://sc-02.coinigy.com/socketcluster/"
 
     # A list of paths to the data for parsing
     paths = {
         "default": "data"
     }
 
+    # API-integration specific types
     result_types = {
-        "accountMessage": namedtuple("accountMessage", (
+        "accountMessage": nt("accountMessage", (
             "Data",
             "MessageType"
-            )),
-        "Notification": namedtuple("Notification", (
+        )),
+
+        "order_type": nt("order_type", (
+            "order_type_id",
+            "name",
+            "order"  # arbitrary value
+        )),
+
+        "account": nt("account", (
+            "auth_id",
+            "auth_key",
+            "auth_optional1",
+            "auth_nickname",
+            "exch_name",
+            "auth_secret",
+            "auth_updated",
+            "auth_active",
+            "auth_trade",
+            "exch_trade_enabled",
+            "exch_id"
+        )),
+
+        "Notification": nt("Notification", (
             "message",
             "message_vars",
             "notification_id",
@@ -46,25 +65,26 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
             "title",
             "title_vars",
             "type"
-            ))
+        ))
     }
 
-    def __init__(self, context, exchange=None, market=None):
+    def __init__(self, context):
         """Launched by Api when we're ready to connect"""
-        self.creds = { # used by the webservice API
+        # used by the webservice API
+        self.creds = {
             "apiKey": context.creds.api,
             "apiSecret": context.creds.secret
         }
-        # Used by the REST API
-        self.secret = context.creds.secret
-        self.api = context.creds.api
 
+        # ApiContext
         self.context = context
+
+        # Web request pool
         self.req = Req().get_req_obj()
 
-        self.exchange = exchange
-        self.market = market
         self.create_logger()
+
+        self.subscribed_chans = None
 
     def call(self, method, query=None, **args):
         """
@@ -75,9 +95,12 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         :return:
         """
         url = '{endpoint}/{method}'.format(
-            endpoint=self.endpoint, method=method)
+            endpoint=self.context.endpoint, method=method)
 
-        payload = {'X-API-KEY': self.api, 'X-API-SECRET': self.secret}
+        payload = {
+            'X-API-KEY': self.context.creds.api,
+            'X-API-SECRET': self.context.creds.secret
+        }
         payload.update(**args)
 
         if query is not None:
@@ -137,6 +160,10 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         Called by the websocket mixin
         """
         self.sock.emitack("channels", None, self.get_channels)
+        self.sock.emitack("accounts", None, self.get_accounts)
+
+    def get_accounts(self, eventname, error, data):
+        self.context.accounts = data["data"]
 
     def get_channels(self, eventname, error, data):
         """
@@ -150,9 +177,9 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         #except:
         #    self.log.critical("Could not parse json from websocket")
 
-        self.all_chans = {}
+        self.context.all_channels = {}
         for chan in data[0]:
-            self.all_chans[chan["channel"]] = False
+            self.context.all_channels[chan["channel"]] = False
 
         for exch in self.context["conf"]["exchanges"]:
             for curr1 in self.context["conf"]["currencies"]:
@@ -162,9 +189,10 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
                             f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
                             f"{ortra}-{exch}--{curr2}--{curr1}".upper()
                         ]:
-                            if chan in self.all_chans:
-                                self.all_chans[chan] = True
-        self.subscribed_chans = [k for k, v in self.all_chans.items() if v]
+                            if chan in self.context.all_channels:
+                                self.context.all_channels[chan] = True
+        self.subscribed_chans = \
+            [k for k, v in self.context.all_channels.items() if v]
 
         for chan in self.subscribed_chans:
             if chan.startswith("ORDER"):
@@ -172,8 +200,9 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
             elif chan.startswith("TRADE"):
                 restype = "tradeMessage"
             self.channels.append(
-                    SockChannel(chan, restype, self.context.callback))
+                SockChannel(chan, restype, self.context.callback))
 
+        # SockMixin
         self.connect_channels()
 
 

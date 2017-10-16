@@ -2,6 +2,7 @@
 Build the context and pipeline; manage the API
 """
 from api.base import ApiMetaAdapter
+from api.context import AllApiContexts
 from common.context import build_context
 
 
@@ -21,6 +22,7 @@ class AppBuilder:
         print(f"topic: {topic}; results: {results}")
         data = {}
         data[topic] = results
+        data["api_context"] = AllApiContexts().get_safe_contexts()
         self.strat.execute(build_context(data))
 
     def shutdown(self):

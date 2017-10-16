@@ -7,7 +7,7 @@ import abc
 
 from utils.factory import Creator
 from api.context import AllApiContexts
-from api.result_types import RESULT_TYPES
+from common.generics import RESULT_TYPES
 from api.websock import SockChannel
 from common.config import Conf
 
@@ -59,10 +59,10 @@ class ApiMetaAdapter:
         api.product.interface(api_class)
         self.wsocks.append(api.product)
 
-    def create_api_adapter(self, api_class, exchange=None, market=None):
+    def create_api_adapter(self, api_class):
         """Create and return an api adapter"""
         api = ApiAdapterFactory()
-        api.product.interface(api_class, exchange, market)
+        api.product.interface(api_class)
         self.apis.append(api.product)
 
     def run(self, callback):
@@ -85,8 +85,6 @@ class ApiProduct:
     def __init__(self):
         self.api_class = None
         self.name = None
-        self.exchange = None
-        self.market = None
         self.calls = None
         self.channels = None
         self.api = None
@@ -94,12 +92,10 @@ class ApiProduct:
         self.conf = Conf()
         self.rstypes = RESULT_TYPES.copy()
 
-    def interface(self, api_class, exchange=None, market=None):
+    def interface(self, api_class):
         """Implement the interface for the adapter object"""
         self.api_class = api_class
         self.name = api_class.name
-        self.exchange = exchange
-        self.market = market
         self.calls = self.conf.get_api_calls()
         self.channels = self.conf.get_ws_subscriptions(self.name)
         self.api = None
