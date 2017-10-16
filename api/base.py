@@ -5,11 +5,11 @@ Generic API Adapter
 from collections import namedtuple
 import abc
 
-from utils.factory import Creator
+from common.factory import Creator
 from api.context import AllApiContexts
-from common.generics import RESULT_TYPES
+from core.generics import RESULT_TYPES
 from api.websock import SockChannel
-from common.config import Conf
+from core.config import Conf
 
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods

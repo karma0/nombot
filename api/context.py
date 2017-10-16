@@ -1,9 +1,9 @@
 """A library for use by ApiAdapters to manage and share information between
 objects instantiated from the same API classes."""
 
-from utils.dotobj import DotObj
-from utils.singleton import Singleton
-from common.config import Conf
+from common.dotobj import DotObj
+from common.singleton import Singleton
+from core.config import Conf
 
 
 class AllApiContexts(metaclass=Singleton):

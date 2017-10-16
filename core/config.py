@@ -3,7 +3,7 @@
 from collections import namedtuple
 import json
 
-from utils.singleton import Singleton
+from common.singleton import Singleton
 
 
 Credentials = namedtuple('Credentials', ('api', 'secret'))

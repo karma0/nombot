@@ -1,9 +1,9 @@
 """Log Util"""
 
-from utils.factory import Creator
-from utils.singleton import Singleton
-from utils.logger import Logger as L
-from common.config import Conf
+from common.factory import Creator
+from common.singleton import Singleton
+from common.logger import Logger as L
+from core.config import Conf
 
 
 class Logger(metaclass=Singleton):

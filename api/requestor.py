@@ -2,7 +2,7 @@
 
 import requests
 
-from utils.singleton import Singleton
+from common.singleton import Singleton
 
 
 class Req(metaclass=Singleton):

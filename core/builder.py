@@ -3,7 +3,7 @@ Build the context and pipeline; manage the API
 """
 from api.base import ApiMetaAdapter
 from api.context import AllApiContexts
-from common.context import build_context
+from core.context import build_context
 
 
 class AppBuilder:

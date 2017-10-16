@@ -6,7 +6,7 @@ from collections import namedtuple as nt
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
 
-from common.log import LoggerMixin
+from core.log import LoggerMixin
 from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
 from api.websock import SockMixin, SockChannel
