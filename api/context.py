@@ -1,8 +1,9 @@
 """A library for use by ApiAdapters to manage and share information between
 objects instantiated from the same API classes."""
 
-from utils.dotobj import DotObj as ApiContext
+from utils.dotobj import DotObj
 from utils.singleton import Singleton
+from common.config import Conf
 
 
 class AllApiContexts(metaclass=Singleton):
@@ -11,6 +12,7 @@ class AllApiContexts(metaclass=Singleton):
     """
     def __init__(self):
         self.contexts = {}  # type: dict
+        self.conf = Conf()
 
     def get(self, apiname):
         """Creates a context if one doesn't exist for given API"""
@@ -22,4 +24,16 @@ class AllApiContexts(metaclass=Singleton):
     def create(self, apiname):
         """Creates a context for given API"""
         self.contexts[apiname] = ApiContext()
+        conf = self.conf.get_api(apiname)
+        conf["currencies"] = self.conf.get_currencies()
+        self.contexts[apiname].populate(conf)
         return self.contexts[apiname]
+
+class ApiContext(DotObj):
+    """ApiContext"""
+    conf = None
+
+    def populate(self, conf):
+        """Populates the context object"""
+        print(f"CONTEXT->CONFIG: {conf}")
+        self.conf = conf
