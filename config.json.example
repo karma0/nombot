@@ -3,8 +3,9 @@
     "calls": [
       "accounts"
     ],
-    "services": {
-      "coinigy": {
+    "services": [
+      {
+        "name": "coinigy",
         "credentials": {
           "apiKey": "xxx",
           "apiSecret": "xxx"
@@ -24,7 +25,7 @@
           "websocket": "wss://sc-02.coinigy.com/socketcluster/"
         }
       }
-    }
+    ]
   },
 
   "logger": {
