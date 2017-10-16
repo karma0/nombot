@@ -23,16 +23,15 @@ able to pay for development services, that will solve the second.
 
 ### Exchanges
 * Extensible for any exchange _(currently only supports coinigy)_.
-* Exchange helper facilities; _connection pooling, websockets, threading, etc._
-  _(coming soon)_
+* Exchange helper facilities; _connection pooling, websockets, shared contexts.
 * Mutiple exchange connectivity allowing for arbitrage.
-* Strive toward forward-compatible interfaces.
+* Strive toward dynamic, forward-compatible interfaces.
 
 ### Currencies
 _(coming soon)_
 * All currencies possible (with some configuration).
 * Strive towards forward-compatible; _if the exchange supports it, it will work_.
-* Wallet support, allowing for automated coin transfers.
+* Wallet support, allowing for automated coin transfers. _(coming soon)_
 
 ### Algorithms
 * Implementation is independent of strategy, allowing for maximal reuse,
@@ -64,10 +63,9 @@ _(coming soon)_
   install notes below).
 
 ### Coming soon...
-* Module-level logging.
 * GRPC strategy to allow parallel processing in microservices environments.
 * API expansion to World Coin Market's top-20 exchanges.
-* Back testing and supporting documentation.
+* Backtesting and supporting documentation.
 * Database integration.
 * More documentation around creating exchanges, algorithms, and strategies.
 * Tests, tests, tests!
