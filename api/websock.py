@@ -3,30 +3,31 @@
 import json
 from socketclusterclient import Socketcluster
 
-from common.log import Logger
+from common.log import LoggerMixin
 from common.config import Conf
 
 
 class SockMixin:
     """Wrap and manage a websocket interface"""
-    def setup(self, callbacks):
-        """Setup a websocket;  callbacks is a hash of subscription:callback"""
-        self.sock = None
-        self.callbacks = callbacks
-        self.handler = SockClusterHandler(self.name, self.callbacks)
-
-    def connect(self):
-        """Connect to a websocket"""
+    def connect_ws(self, post_connect_callback, channels):
+        """
+        Connect to a websocket
+        :channels:  List of SockChannel instances
+        """
+        self.post_conn_cb = post_connect_callback
+        self.channels = channels
         self.sock = Socketcluster.socket(self.wsendpoint)
-        self.sock.setBasicListener(self.on_connect, self.on_close, self.on_error)
+        self.sock.setBasicListener(self.on_connect, self.on_connect_close,
+                                   self.on_connect_error)
         self.sock.setAuthenticationListener(self.on_set_auth, self.on_auth)
-        self.sock.setreconnection(True)
-        self.log.info(f"Started websocket, listening on {self.uri}")
+        self.sock.setreconnection(False)
+        self.sock.connect()
+        self.log.info(f"Started websocket, listening on {self.wsendpoint}")
 
     def on_set_auth(self, sock, token):
         """Set Auth request received from websocket"""
         self.log.info(f"Token received: {token}")
-        sock.setAuthToken(token)
+        sock.setAuthtoken(token)
 
     def on_auth(self, sock, is_authenticated):
         """Message received from websocket"""
@@ -34,42 +35,45 @@ class SockMixin:
 
         def ack(eventname, error, data):
             """Ack"""
+            if error:
+                self.log.error(error)
             self.log.info(f"Token is {json.dumps(data, sort_keys=True)}")
-            self.handler.connected(sock)
+            self.post_conn_cb()
 
-        sock.emitack("auth", self.conf.get_api_credentials(), ack)
+        sock.emitack("auth", self.creds, ack)
 
     def on_connect(self, sock):
         """Message received from websocket"""
-        self.log.info("Connected to websocket {self.uri}")
+        self.log.info("Connected to websocket {self.wsendpoint}")
 
-    def on_error(self, sock, err):
+    def on_connect_error(self, sock, err):
         """Error received from websocket"""
         self.log.error(err)
 
-    def on_close(self, sock):
+    def on_connect_close(self, sock):
         """Close received from websocket"""
-        self.log.info(f"Received close; shutting down websocket {self.uri}")
+        self.log.info(f"Received close; shutting down websocket {self.wsendpoint}")
+
+    def connect_channels(self):
+        for channel in self.channels:
+            channel.connect(self.sock)
 
 
-class SockClusterHandler:
+class SockChannel(LoggerMixin):
     """Handles Socketcluster alive connections"""
-    def __init__(self, name, callbacks):
+    name = 'channel' # For logging
+    def __init__(self, channel, response_type, callback):
+        self.create_logger()
         self.sock = None
-        self.callbacks = callbacks
-        self.conf = Conf()
-        self.subscriptions = Conf().get_subscriptions()
-        self.log = Logger().get(name)
+        self.channel = channel
+        self.response_type = response_type
+        self.callback = callback
 
-    def connected(self, sock):
+        self.log.debug(f"Creating channel: {self.channel}")
+
+    def connect(self, sock):
         """We have liftoff!"""
         self.sock = sock
-        for channel in self.subscriptions:
-            self.sock.subscribe(channel)
-            self.sock.onchannel(channel, self.callbacks[channel])
-
-    def chanmsg(self, method, msg, callback=lambda k, m:
-                self.log.info(f"Received: {k}: {m}")):
-        """Received message; process"""
-        self.log.debug(f"Sending method {method}: {msg}")
-        self.sock.emitack(method, msg, callback)
+        self.sock.subscribe(self.channel)
+        self.sock.onchannel(self.channel, self.callback)
+        self.log.debug(f"Listening on channel: {self.channel}")

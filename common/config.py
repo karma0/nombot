@@ -6,7 +6,7 @@ import json
 from utils.singleton import Singleton
 
 
-Credentials = namedtuple('Credentials', ('api', 'secret', 'endpoint'))
+Credentials = namedtuple('Credentials', ('api', 'secret'))
 
 
 class Conf(metaclass=Singleton):
@@ -25,12 +25,32 @@ class Conf(metaclass=Singleton):
         """Returns a Credentials object for API access"""
         try:
             return Credentials(
-                api=self.data["api"]["services"][apiname]["apiKey"],
-                secret=self.data["api"]["services"][apiname]["apiSecret"],
-                endpoint=self.data["api"]["services"][apiname]["endpoint"]
+                api=self.data["api"]["services"][apiname]["credentials"]["apikey"],
+                secret=self.data["api"]["services"][apiname]["credentials"]["secret"],
                 )
         except:
             raise Exception(f"Couldn't find credentials for API: {apiname}")
+
+    def get_api_endpoints(self, apiname):
+        """Returns the API endpoints"""
+        try:
+            return self.data["api"]["services"][apiname]["endpoints"].copy()
+        except KeyError:
+            raise Exception(f"Couldn't find the API endpoints")
+
+    def get_currencies(self):
+        """Returns the currencies that we'll be working with"""
+        try:
+            return self.data["currencies"].copy()
+        except KeyError:
+            raise Exception(f"Couldn't find the currencies in the configuration")
+
+    def get_ws_subscriptions(self, apiname):
+        """Returns the websocket subscriptions"""
+        try:
+            return self.data["api"]["services"][apiname]["subscriptions"].copy()
+        except KeyError:
+            raise Exception(f"Couldn't find the websocket subscriptions")
 
     def get_api_calls(self):
         """Returns a list of calls to the api to generate the context object"""
@@ -39,10 +59,15 @@ class Conf(metaclass=Singleton):
         except:
             raise Exception(f"Couldn't find call list for APIs")
 
-    def get_api(self):
+    def get_api(self, name=None):
         """Returns the API configuration"""
+        if name is None:
+            try:
+                return self.data["api"].copy()
+            except:
+                raise Exception(f"Couldn't find the API configuration")
         try:
-            return self.data["api"].copy()
+            return self.data["api"]["services"][name].copy()
         except:
             raise Exception(f"Couldn't find the API configuration")
 
