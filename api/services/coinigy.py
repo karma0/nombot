@@ -3,6 +3,8 @@
 
 from collections import namedtuple as nt
 
+from marshmallow import fields, Schema
+
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
 
@@ -10,6 +12,17 @@ from core.log import LoggerMixin
 from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
 from api.websock import SockMixin, SockChannel
+
+from generics.context import ResultSchema
+from generics.exchange import NotificationSchema
+
+
+class ResponseSchema(Schema):
+    """Schema defining how the API will respond"""
+    data = fields.List(fields.Nested(ResultSchema()), required=True)
+    notifications = fields.List(fields.Nested(NotificationSchema()))
+    err_num = fields.Str()
+    err_msg = fields.Str()
 
 
 class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
