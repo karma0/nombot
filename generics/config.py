@@ -46,3 +46,7 @@ class ConfSchema(Schema):
     currencies = fields.List(fields.Str())
     logger = fields.Nested(LogConfSchema())
     api = fields.Nested(ApiConfSchema())
+
+    class Meta:
+        """Make sure that we bail if we can't parse"""
+        strict = True
