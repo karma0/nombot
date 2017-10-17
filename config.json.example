@@ -7,8 +7,8 @@
       {
         "name": "coinigy",
         "credentials": {
-          "apiKey": "xxx",
-          "apiSecret": "xxx"
+          "apikey": "xxx",
+          "secret": "xxx"
         },
 
         "subscriptions": {
