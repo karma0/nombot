@@ -2,14 +2,12 @@
 Generic API Adapter
 """
 
-from collections import namedtuple
 import abc
 
 from marshmallow import fields, Schema, pre_load
 
 from common.factory import Creator
 from api.websock import SockChannel
-from core.config import Conf
 
 from generics import exchange as X
 from generics.context import ResultSchema
@@ -49,12 +47,16 @@ class ResponseSchema(Schema):
 
     @pre_load
     def find_schema(self, in_data):
-        if in_data.errors:
+        """Parse the incoming schema"""
+        if "errors" in in_data:
             return in_data
-        in_data["data"] = RESPONSE_MAP[in_data.call].loads(in_data["data"])
+        in_data["data"] = RESPONSE_MAP[in_data.call]\
+            .loads(in_data["data"])\
+            .data
         return in_data
 
     class Meta:
+        """Stricty"""
         strict = True
 
 
@@ -72,51 +74,27 @@ class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
 
 class ApiMetaAdapter:
     """Adapter of adapters for all API instantiations"""
-    def __init__(self, api_classes):
+    def __init__(self, api_contexts):
         self.apis = []  # type: list
         self.wsocks = []  # type: list
 
-        # Extract configuration necessary to generate api adapters
-        self.conf = Conf()
-        api_conf = self.conf.get_api()
-        exchanges = getattr(api_conf, "exchanges", [])
-        currencies = getattr(api_conf, "currencies", [])
+        self.api_contexts = api_contexts
 
-        # Setup exchange/currency/call adapters
-        exch_curr = []
-        for exch in exchanges:
-            for curr in currencies:
-                exch_curr.append((exch, curr))
+        for context in api_contexts:
+            wsock = WsAdapterFactory()
+            wsock.product.interface(context)
+            self.wsocks.append(wsock.product)
 
-        if exch_curr:
-            for val_pair in exch_curr:
-                for api_class in api_classes:
-                    self.create_api_adapter(api_class, *val_pair)
-        else:
-            for api_class in api_classes:
-                self.create_api_adapter(api_class)
+            api = ApiAdapterFactory()
+            api.product.interface(context)
+            self.apis.append(api.product)
 
-        for api_class in api_classes:
-            self.create_ws_adapter(api_class)
-
-    def create_ws_adapter(self, api_class):
-        """Create and return an api adapter"""
-        api = WsAdapterFactory()
-        api.product.interface(api_class)
-        self.wsocks.append(api.product)
-
-    def create_api_adapter(self, api_class):
-        """Create and return an api adapter"""
-        api = ApiAdapterFactory()
-        api.product.interface(api_class)
-        self.apis.append(api.product)
-
-    def run(self, callback):
+    def run(self):
         """Executed on startup of application"""
         for wsock in self.wsocks:
-            wsock.run(callback)
+            wsock.run(wsock.api_context.get("callback"))
         for api in self.apis:
-            api.run(callback)
+            api.run(api.api_context.get("callback"))
 
     def shutdown(self):
         """Executed on shutdown of application"""
@@ -129,29 +107,13 @@ class ApiMetaAdapter:
 class ApiProduct:
     """ApiAdapterFactory Product interface"""
     def __init__(self):
-        self.api_class = None
-        self.name = None
-        self.calls = None
-        self.channels = None
         self.api = None
         self.api_context = None
-        self.conf = Conf()
-        self.rstypes = RESULT_TYPES.copy()
 
-    def interface(self, api_class):
+    def interface(self, context):
         """Implement the interface for the adapter object"""
-        self.api_class = api_class
-        self.name = api_class.name
-        self.calls = self.conf.get_api_calls()
-        self.channels = self.conf.get_ws_subscriptions(self.name)
         self.api = None
-        self.api_context = AllApiContexts().get(self.name)
-        self.api_context.creds = self.conf.get_api_credentials(self.name)
-
-        try:
-            self.rstypes.update(self.api.result_types)
-        except AttributeError:
-            pass
+        self.api_context = context
 
     def shutdown(self):
         """Executed on shutdown of application"""
@@ -160,33 +122,35 @@ class ApiProduct:
 
 class WsAdapter(ApiProduct):
     """Adapter for WebSockets"""
-    def run(self, callback):
+    def run(self):
         """
         Called by internal API subsystem to initialize websockets connections
         in the API interface
         """
-        self.api_context.callback = callback
-        self.api = self.api_class(self.api_context)
-
-        # Default response type
-        self.chanmsg = namedtuple(self.name, ("channel", "message"))
+        self.api = self.api_context.get("cls")(self.api_context)
 
         # Initialize websocket with channels
-        self.api.connect_ws(self.api.on_ws_connect,
-            [SockChannel(channel, res_type, callback) \
-                for channel, res_type in
-             self.conf.get_ws_subscriptions(self.name).items()]
-        )
+        self.api.connect_ws(self.api.on_ws_connect, [
+            SockChannel(channel, res_type, self.api_context.get("callback"))
+            for channel, res_type in
+            self
+            .api_context
+            .get("conf")
+            .get("subscriptions")(self.api_context.get("name")).items()
+        ])
 
 
 class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
-    def run(self, result_callback):
+    def run(self):
         """Executed on startup of application"""
-        self.api = self.api_class(self.api_context)
+        self.api = self.api_context.get("cls")(self.api_context)
 
-        # schedule loop
-        result_callback({call: self.call(call) for call in self.calls})
+        # TODO: schedule loop
+        self.api_context.get("callback")(
+            {call: self.call(call) for call in
+             self.api_context.get("calls")}
+            )
 
     def call(self, call):
         """Executed on each scheduled iteration"""
@@ -199,31 +163,16 @@ class ApiAdapter(ApiProduct):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
         try:
-            path = self.api.paths[callname]
+            resp_sch = self.api.result_schema().load(result)
         except:
-            raise Exception(f"Could not retrieve path for {callname}")
-
-        # Parse the path to the data
-        idx = result
-        count = 0
+            raise Exception(f"""Could not parse response for {callname}\n \
+                            Errors: {resp_sch["errors"]}""")
         try:
-            for route in path.split('.'):
-                idx = idx[route]
-                count += 1
+            loaded_sch = RESPONSE_MAP.get(callname).load(resp_sch.data)
+            return loaded_sch.data
         except:
-            raise Exception(f"Failed to find route ({path}) in part {count} \
-                            for results:\n{result}")
-
-        # Generate the result object from the result_type
-        try:
-            if isinstance(idx, dict):
-                return [RESULT_TYPES[callname](**r) for r in idx]
-            elif isinstance(idx, str):
-                return [RESULT_TYPES[callname](idx)]
-            return [RESULT_TYPES[callname](**r) for r in idx]
-        except:
-            raise Exception(f"Could not parse result(s) to object {callname} \
-                            for results:\n{idx}")
+            raise Exception(f"""Could not parse response for {callname}\n \
+                            Errors: {loaded_sch["errors"]}""")
 
 
 class ApiErrorMixin:
@@ -246,7 +195,6 @@ class IApi:
     # Use name to create a name for your api interface, and use the same
     #  name in your config
     name = "default"
-    paths = None
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""

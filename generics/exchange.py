@@ -3,7 +3,18 @@
 from marshmallow import Schema
 from marshmallow import fields as f
 
-from generics.context import ResultSchema
+
+class ApiFacadeSchema(Schema):
+    """Used to define an API integration (facade)"""
+    name = f.Str(required=True)
+    call = f.Method(required=True)
+
+
+class ResultSchema(Schema):
+    """Generic API result (inherit to use a schema for result creation)"""
+    class Meta:
+        """All results should be strict"""
+        strict = True
 
 
 class NotificationSchema(ResultSchema):

@@ -24,10 +24,10 @@ class Conf(metaclass=Singleton):
             raise Exception(f"Could not source config file: {filename}")
 
         self.conf_schema = ConfSchema()
-        self.sani_data = self.conf_schema.loads(self.data).errors
-        if self.sani_data.errors:
+        self.sani_data, errors = self.conf_schema.loads(self.data)
+        if errors:
             raise Exception(f"Could not parse config file \
-                    ({filename}):\n{self.sani_data.errors}")
+                    ({filename}):\n{errors}")
 
         self.services_by_name = {}  # type: dict
 

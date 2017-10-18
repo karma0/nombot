@@ -3,7 +3,7 @@
 
 from collections import namedtuple as nt
 
-from marshmallow import fields
+from marshmallow import fields, pre_load
 
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
@@ -24,6 +24,13 @@ class CoinigyResponseSchema(ResponseSchema):
     err_num = fields.Str()
     err_msg = fields.Str()
 
+    @pre_load
+    def combine_errors(self, in_data):
+        """Convert the error to the expected output"""
+        if in_data.err_num:
+            in_data["errors"] = dict()
+            in_data["errors"][in_data["err_num"]] = in_data["err_msg"]
+
 
 class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
@@ -33,20 +40,12 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
     name = "coinigy"
 
-    # A list of paths to the data for parsing
-    paths = {
-        "default": "data"
-    }
-
-    # API-integration specific types
-    result_types = {}
-
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
         # used by the webservice API
         self.creds = {
-            "apiKey": context.creds.api,
-            "apiSecret": context.creds.secret
+            "apiKey": context.conf.creds.api,
+            "apiSecret": context.conf.creds.secret
         }
 
         # ApiContext
@@ -128,6 +127,10 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
         return res
 
+    def result_schema(self):
+        """Return a schema by which to parse results"""
+        return ResultSchema()
+
     def on_ws_connect(self):
         """
         Called by the websocket mixin
@@ -159,8 +162,8 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
                 for curr2 in self.context["conf"]["currencies"]:
                     for ortra in ["order", "trade"]:
                         for chan in [
-                            f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
-                            f"{ortra}-{exch}--{curr2}--{curr1}".upper()
+                                f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
+                                f"{ortra}-{exch}--{curr2}--{curr1}".upper()
                         ]:
                             if chan in self.context.all_channels:
                                 self.context.all_channels[chan] = True
@@ -177,7 +180,6 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
         # SockMixin
         self.connect_channels()
-
 
     # Custom methods
 
