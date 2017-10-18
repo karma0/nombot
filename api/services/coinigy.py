@@ -40,14 +40,12 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         """Launched by Api when we're ready to connect"""
         self.result_schema = CoinigyResponseSchema()
 
-        # used by the webservice API
-        self.creds = {
-            "apiKey": context["conf"]["credentials"]["apikey"],
-            "apiSecret": context["conf"]["credentials"]["secret"],
-        }
-
         # ApiContext
         self.context = context
+        self.payload = {
+            'X-API-KEY': self.context["conf"]["credentials"]["apikey"],
+            'X-API-SECRET': self.context["conf"]["credentials"]["secret"],
+        }
 
         # Web request pool
         self.req = Req().get_req_obj()
@@ -67,10 +65,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         url = '{endpoint}/{method}'.format(
             endpoint=self.context.endpoint, method=method)
 
-        payload = {
-            'X-API-KEY': self.context.creds.api,
-            'X-API-SECRET': self.context.creds.secret
-        }
+        payload = self.payload.copy()
         payload.update(**args)
 
         if query is not None:
@@ -143,9 +138,9 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         if error:
             raise Exception(error)
 
-        self.context.all_channels = {}
+        self.context["scratch"]["all_channels"] = {}
         for chan in data[0]:
-            self.context.all_channels[chan["channel"]] = False
+            self.context["scratch"]["all_channels"][chan["channel"]] = False
 
         for exch in self.context["conf"]["exchanges"]:
             for curr1 in self.context["currencies"]:
@@ -175,7 +170,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def alerts(self):
         """List all allerts"""
-        all_alerts = self.api.call('alerts')
+        all_alerts = self.call('alerts')
         open_alerts = pd.DataFrame(all_alerts['open_alerts'])
         alert_history = pd.DataFrame(all_alerts['alert_history'])
         return {"open_alerts": open_alerts, "alert_history": alert_history}
@@ -191,48 +186,48 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def asks(self):
         """Asks"""
-        return self.api.data(data_type='asks')
+        return self.data(data_type='asks')
 
     def bids(self):
         """Bids"""
-        return self.api.data(data_type='bids')
+        return self.data(data_type='bids')
 
     def allorders(self):
         """Orders"""
-        return self.api.data(data_type='orders')
+        return self.data(data_type='orders')
 
     def news_feed(self):
         """Retrieve news feed"""
-        dat = self.api.call('newsFeed')
+        dat = self.call('newsFeed')
         dat.timestamp = pd.to_datetime(dat.timestamp)
         dat.set_index('timestamp', inplace=True)
         return dat
 
     def order_types(self):
         """List supported order types"""
-        dat = self.api.call('orderTypes')['data']
+        dat = self.call('orderTypes')['data']
         return dict(order_types=pd.DataFrame.from_records(dat['order_types']),
                     price_types=pd.DataFrame.from_records(dat['price_types']))
 
     def refresh_balance(self):
         """Refreshes the balance backend"""
-        return self.api.call('refreshBalance')
+        return self.call('refreshBalance')
 
     def add_alert(self, price, note):
         """Add an alert"""
         self.check_missing_parameter("add_alert", "exchange")
         self.check_missing_parameter("add_alert", "market")
 
-        return self.api.call('addAlert',
-                             exch_code=self.exchange,
-                             market_name=self.market,
-                             alert_price=price,
-                             alert_note=note)['notifications']
+        return self.call('addAlert',
+                         exch_code=self.exchange,
+                         market_name=self.market,
+                         alert_price=price,
+                         alert_note=note)['notifications']
 
     def delete_alert(self, alert_id):
         """Delete an alert"""
-        return self.api.call('deleteAlert',
-                             alert_id=alert_id)['notifications']
+        return self.call('deleteAlert',
+                         alert_id=alert_id)['notifications']
 
     def add_order(self, auth_id, order_type_id, price_type_id,
                   limit_price, stop_price, order_quantity):
@@ -242,19 +237,19 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         self.check_missing_parameter("add_order", "exchange")
         self.check_missing_parameter("add_order", "market")
 
-        return self.api.call('addOrder',
-                             auth_id=auth_id,
-                             exch_id=self.exchange,
-                             mkt_id=self.market,
-                             order_type_id=order_type_id,
-                             price_type_id=price_type_id,
-                             limit_price=limit_price,
-                             stop_price=stop_price,
-                             order_quantity=order_quantity)
+        return self.call('addOrder',
+                         auth_id=auth_id,
+                         exch_id=self.exchange,
+                         mkt_id=self.market,
+                         order_type_id=order_type_id,
+                         price_type_id=price_type_id,
+                         limit_price=limit_price,
+                         stop_price=stop_price,
+                         order_quantity=order_quantity)
 
     def cancel_order(self, order_id):
         """Cancel an order"""
-        return self.api.call('cancelOrder', internal_order_id=order_id)
+        return self.call('cancelOrder', internal_order_id=order_id)
 
     def balance_history(self, date):
         """
@@ -264,8 +259,8 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         :return:        a view of the acccount balances as of the date provided
         """
         balhist = pd.DataFrame.from_records(
-            self.api.call('balanceHistory',
-                          date=date)['data']['balance_history'])
+            self.call('balanceHistory',
+                      date=date)['data']['balance_history'])
         if balhist.empty:
             return balhist
         acct = self.call('accounts')[['auth_id', 'exch_name']]
