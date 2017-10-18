@@ -1,8 +1,6 @@
 """Coinigy API Facade
 """
 
-from collections import namedtuple as nt
-
 from marshmallow import fields, pre_load
 
 import numpy as np  # pylint: disable=import-error
@@ -13,13 +11,11 @@ from api.requestor import Req
 from api.base import IApi, ApiErrorMixin, ResponseSchema
 from api.websock import SockMixin, SockChannel
 
-from generics.context import ResultSchema
 from generics.exchange import NotificationSchema
 
 
 class CoinigyResponseSchema(ResponseSchema):
     """Schema defining how the API will respond"""
-    data = fields.List(fields.Nested(ResultSchema()), required=True)
     notifications = fields.List(fields.Nested(NotificationSchema()))
     err_num = fields.Str()
     err_msg = fields.Str()
@@ -42,10 +38,12 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
+        self.result_schema = CoinigyResponseSchema()
+
         # used by the webservice API
         self.creds = {
-            "apiKey": context.conf.creds.api,
-            "apiSecret": context.conf.creds.secret
+            "apiKey": context["conf"]["credentials"]["apikey"],
+            "apiSecret": context["conf"]["credentials"]["secret"],
         }
 
         # ApiContext
@@ -127,10 +125,6 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
         return res
 
-    def result_schema(self):
-        """Return a schema by which to parse results"""
-        return ResultSchema()
-
     def on_ws_connect(self):
         """
         Called by the websocket mixin
@@ -139,7 +133,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         self.sock.emitack("accounts", None, self.get_accounts)
 
     def get_accounts(self, eventname, error, data):
-        self.context.accounts = data["data"]
+        self.context["scratch"]["accounts"] = data["data"]
 
     def get_channels(self, eventname, error, data):
         """
@@ -148,18 +142,14 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         """
         if error:
             raise Exception(error)
-        #try:
-        #    data = json.dumps(jsondata)
-        #except:
-        #    self.log.critical("Could not parse json from websocket")
 
         self.context.all_channels = {}
         for chan in data[0]:
             self.context.all_channels[chan["channel"]] = False
 
         for exch in self.context["conf"]["exchanges"]:
-            for curr1 in self.context["conf"]["currencies"]:
-                for curr2 in self.context["conf"]["currencies"]:
+            for curr1 in self.context["currencies"]:
+                for curr2 in self.context["currencies"]:
                     for ortra in ["order", "trade"]:
                         for chan in [
                                 f"{ortra}-{exch}--{curr1}--{curr2}".upper(),

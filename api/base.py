@@ -163,7 +163,7 @@ class ApiAdapter(ApiProduct):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
         try:
-            resp_sch = self.api.result_schema().load(result)
+            resp_sch = self.api.result_schema.load(result)
         except:
             raise Exception(f"""Could not parse response for {callname}\n \
                             Errors: {resp_sch["errors"]}""")
