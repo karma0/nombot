@@ -5,6 +5,13 @@ from marshmallow import Schema, fields
 from generics.config import ApiServiceConfSchema
 
 
+class ApiConfContextSchema(Schema):
+    """Used for sharing information about a single API between instances"""
+    conf = fields.Nested(ApiServiceConfSchema())
+    calls = fields.List(fields.Str())
+    currencies = fields.List(fields.Str())
+
+
 class ApiContextSchema(Schema):
     """Used for sharing information about a single API between instances"""
     conf = fields.Nested(ApiServiceConfSchema())
@@ -17,6 +24,7 @@ class ApiContextSchema(Schema):
 class ResultSchema(Schema):
     """Generic API result (inherit to use a schema for result creation)"""
     class Meta:
+        """All results should be strict"""
         strict = True
 
 

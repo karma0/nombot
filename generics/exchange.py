@@ -30,6 +30,11 @@ class AccountSchema(ResultSchema):
     auth_updated = f.DateTime()
 
 
+class RefreshBalanceSchema(Schema):
+    """Used to refresh a balance on an account"""
+    auth_id = f.Str(required=True)
+
+
 class BalanceSchema(ResultSchema):
     """A balance for a given currency or auth_id"""
     balance_curr_code = f.Str(required=True)
@@ -62,6 +67,12 @@ class OrderSchema(ResultSchema):
     display_name = f.Str()
 
 
+class AllOrdersSchema(ResultSchema):
+    """Result containing open orders and history"""
+    open_orders = f.List(f.Nested(OrderSchema()))
+    order_history = f.List(f.Nested(OrderSchema()))
+
+
 class AlertSchema(ResultSchema):
     """Alert"""
     exch_name = f.Str(required=True)
@@ -74,6 +85,12 @@ class AlertSchema(ResultSchema):
     alert_note = f.Str()
     operator_text = f.Str()
     display_name = f.Str()
+
+
+class AllAlertsSchema(ResultSchema):
+    """Result containing active alerts and history"""
+    open_alerts = f.List(f.Nested(AlertSchema()))
+    alert_history = f.List(f.Nested(AlertSchema()))
 
 
 class FavoriteTickSchema(ResultSchema):
@@ -125,6 +142,12 @@ class PriceTypeSchema(ResultSchema):
     name = f.Str(required=True)
 
 
+class OrderTypesCallSchema(ResultSchema):
+    """Response containing order_types and price_types"""
+    order_types = f.List(f.Nested(OrderTypeSchema()))
+    price_types = f.List(f.Nested(PriceTypeSchema()))
+
+
 class CreateAlertSchema(Schema):
     """Schema to generate a new alert"""
     exch_code = f.Str(required=True)  # BITF
@@ -165,7 +188,7 @@ class ExchangeSchema(ResultSchema):
     exch_url = f.Str(required=True)
 
 
-class MarketRequestSchema(Schema):
+class ExchangeReferenceSchema(Schema):
     """Used to request market data"""
     exchange_code = f.Str(required=True)
 

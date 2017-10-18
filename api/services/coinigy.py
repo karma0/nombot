@@ -3,21 +3,21 @@
 
 from collections import namedtuple as nt
 
-from marshmallow import fields, Schema
+from marshmallow import fields
 
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
 
 from core.log import LoggerMixin
 from api.requestor import Req
-from api.base import IApi, ApiErrorMixin
+from api.base import IApi, ApiErrorMixin, ResponseSchema
 from api.websock import SockMixin, SockChannel
 
 from generics.context import ResultSchema
 from generics.exchange import NotificationSchema
 
 
-class ResponseSchema(Schema):
+class CoinigyResponseSchema(ResponseSchema):
     """Schema defining how the API will respond"""
     data = fields.List(fields.Nested(ResultSchema()), required=True)
     notifications = fields.List(fields.Nested(NotificationSchema()))
@@ -39,47 +39,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     }
 
     # API-integration specific types
-    result_types = {
-        "accountMessage": nt("accountMessage", (
-            "Data",
-            "MessageType"
-        )),
-
-        "order_type": nt("order_type", (
-            "order_type_id",
-            "name",
-            "order"  # arbitrary value
-        )),
-
-        "account": nt("account", (
-            "auth_id",
-            "auth_key",
-            "auth_optional1",
-            "auth_nickname",
-            "exch_name",
-            "auth_secret",
-            "auth_updated",
-            "auth_active",
-            "auth_trade",
-            "exch_trade_enabled",
-            "exch_id"
-        )),
-
-        "Notification": nt("Notification", (
-            "message",
-            "message_vars",
-            "notification_id",
-            "pinned",
-            "sound",
-            "sound_id",
-            "sound_override",
-            "style",
-            "time",
-            "title",
-            "title_vars",
-            "type"
-        ))
-    }
+    result_types = {}
 
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
