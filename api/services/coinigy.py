@@ -23,7 +23,7 @@ class CoinigyResponseSchema(ResponseSchema):
     @pre_load
     def combine_errors(self, in_data):
         """Convert the error to the expected output"""
-        if in_data.err_num:
+        if "err_num" in in_data:
             in_data["errors"] = dict()
             in_data["errors"][in_data["err_num"]] = in_data["err_msg"]
 
@@ -51,6 +51,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         self.req = Req().get_req_obj()
 
         self.create_logger()
+        self.log.debug(f"Starting API Facade {self.name}")
 
         self.subscribed_chans = None
 
@@ -63,7 +64,8 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         :return:
         """
         url = '{endpoint}/{method}'.format(
-            endpoint=self.context.endpoint, method=method)
+            endpoint=self.context["conf"]["endpoints"]["rest"],
+            method=method)
 
         payload = self.payload.copy()
         payload.update(**args)
@@ -71,7 +73,13 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         if query is not None:
             payload.update(query)
 
+        self.log.debug(f"URL: {url}")
+        self.log.debug(f"Payload: {payload}")
+
         res = self.req.post(url, data=payload)
+
+        self.log.debug(f"STATUS: {res.status_code}")
+        self.log.debug(f"RESPONSE: {res.text}")
 
         if res.status_code > 299:
             self.log.error(f"URL: {url}")

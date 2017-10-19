@@ -6,6 +6,7 @@ import abc
 
 from marshmallow import fields, Schema, pre_load
 
+from core.log import LoggerMixin
 from common.factory import Creator
 from api.websock import SockChannel
 
@@ -42,22 +43,24 @@ REQUEST_MAP = {
 
 class ResponseSchema(Schema):
     """Schema defining the data structure the API will respond with"""
-    data = fields.List(fields.Nested(ResultSchema()), required=True)
+    call = fields.Str()
     errors = fields.Dict()
 
-    @pre_load
-    def find_schema(self, in_data):
-        """Parse the incoming schema"""
-        if "errors" in in_data:
-            return in_data
-        in_data["data"] = RESPONSE_MAP[in_data.call]\
-            .loads(in_data["data"])\
-            .data
-        return in_data
+    #@pre_load
+    #def find_schema(self, in_data):
+    #    """Parse the incoming schema"""
+    #    if "errors" in in_data:
+    #        return in_data
+    #    print(f"IN_DATA!{in_data}")
+    #    in_data["data"] = RESPONSE_MAP[in_data["call"]]\
+    #        .loads(in_data["data"], many=True)\
+    #        .data
+    #    return in_data
 
     class Meta:
         """Stricty"""
         strict = True
+        additional = ("data",)
 
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
@@ -72,19 +75,23 @@ class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
         return ApiAdapter()
 
 
-class ApiMetaAdapter:
+class ApiMetaAdapter(LoggerMixin):
     """Adapter of adapters for all API instantiations"""
+    name = "api"
+
     def __init__(self, api_contexts):
         self.apis = []  # type: list
         self.wsocks = []  # type: list
 
-        self.api_contexts = api_contexts
+        self.create_logger()
 
-        for context in api_contexts:
-            wsock = WsAdapterFactory()
-            wsock.product.interface(context)
-            self.wsocks.append(wsock.product)
+        self.log.debug(f"Launching API contexts: {api_contexts}")
+        for name, context in api_contexts.items():
+            #wsock = WsAdapterFactory()
+            #wsock.product.interface(context)
+            #self.wsocks.append(wsock.product)
 
+            self.log.debug(f"Starting API: {name}")
             api = ApiAdapterFactory()
             api.product.interface(context)
             self.apis.append(api.product)
@@ -94,7 +101,7 @@ class ApiMetaAdapter:
         for wsock in self.wsocks:
             wsock.run(wsock.api_context.get("callback"))
         for api in self.apis:
-            api.run(api.api_context.get("callback"))
+            api.run()
 
     def shutdown(self):
         """Executed on shutdown of application"""
@@ -167,8 +174,10 @@ class ApiAdapter(ApiProduct):
         except:
             raise Exception(f"""Could not parse response for {callname}\n \
                             Errors: {resp_sch["errors"]}""")
+        print(f"""RESP_SCH!{resp_sch.data["data"]}""")
+        # TODO: Leave this up to the Coinigy API
         try:
-            loaded_sch = RESPONSE_MAP.get(callname).load(resp_sch.data)
+            loaded_sch = RESPONSE_MAP.get(callname).load(resp_sch.data["data"])
             return loaded_sch.data
         except:
             raise Exception(f"""Could not parse response for {callname}\n \
@@ -184,10 +193,6 @@ class ApiErrorMixin:
 
         raise Exception(f"Error: in order to retreive {call} from the API, \
                 {self.name} requires {parameter} to be passed in.")
-
-    def check_for_errors(self, response):
-        """Validates that an error hasn't occurred"""
-        pass
 
 
 class IApi:

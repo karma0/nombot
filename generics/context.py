@@ -3,13 +3,12 @@
 from marshmallow import Schema, fields
 
 from generics.config import ApiServiceConfSchema
-from generics.exchange import ApiFacadeSchema, ResultSchema
+from generics.exchange import ResultSchema
 
 
 class ApiContextSchema(Schema):
     """Used for sharing information about a single API between instances"""
     name = fields.Str(required=True)
-    cls = fields.Nested(ApiFacadeSchema())
     conf = fields.Nested(ApiServiceConfSchema())
     calls = fields.List(fields.Str())
     currencies = fields.List(fields.Str())
@@ -19,6 +18,7 @@ class ApiContextSchema(Schema):
     class Meta:
         """ApiContext metaparameters"""
         strict = True
+        additional = ("cls",)
 
 
 class StrategyContextSchema(Schema):
