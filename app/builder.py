@@ -1,8 +1,8 @@
 """
 Build the context and pipeline; manage the API
 """
-from core.log import LoggerMixin
-from core.config import Conf
+from app.log import LoggerMixin
+from app.config import Conf
 from api.core import ApiMetaAdapter
 from generics.context import ApiContextSchema, StrategyContextSchema
 

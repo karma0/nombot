@@ -2,7 +2,7 @@
 API Core
 """
 
-from core.log import LoggerMixin
+from app.log import LoggerMixin
 from common.factory import Creator
 from api.websock import SockChannel
 from api.schema import REQUEST_MAP, RESPONSE_MAP, ResponseSchema

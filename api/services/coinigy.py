@@ -6,7 +6,7 @@ from marshmallow import fields, pre_load
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
 
-from core.log import LoggerMixin
+from app.log import LoggerMixin
 from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
 from api.schema import ResponseSchema

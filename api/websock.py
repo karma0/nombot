@@ -3,8 +3,8 @@
 import json
 from socketclusterclient import Socketcluster
 
-from core.log import LoggerMixin
-from core.config import Conf
+from app.log import LoggerMixin
+from app.config import Conf
 
 
 class SockMixin:

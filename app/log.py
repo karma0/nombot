@@ -3,7 +3,7 @@
 from common.factory import Creator
 from common.singleton import Singleton
 from common.logger import Logger as L
-from core.config import Conf
+from app.config import Conf
 
 
 class Logger(metaclass=Singleton):
