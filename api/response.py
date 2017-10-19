@@ -1,5 +1,5 @@
 """
-Generic API Interface, mixin, and request/response maps/types
+Generic API Interface, mixin, and response maps/types
 """
 
 from marshmallow import fields, Schema, post_load
@@ -20,17 +20,6 @@ RESPONSE_MAP = {
     "markets": X.MarketSchema(many=True),
     "data": X.AllMarketDataSchema(),
     "ticker": X.TickSchema(),
-}
-
-REQUEST_MAP = {
-    "refreshBalance": X.RefreshBalanceSchema(),
-    "addAlert": X.CreateAlertSchema(),
-    "deleteAlert": X.AlertReferenceSchema(),
-    "addOrder": X.CreateOrderSchema(),
-    "cancelOrder": X.OrderReferenceSchema(),
-    "markets": X.ExchangeReferenceSchema(),
-    "data": X.MarketDataRequestSchema(),
-    "ticker": X.TickerRequestSchema(),
 }
 
 
@@ -57,8 +46,8 @@ class ResponseSchema(Schema):
             return Result(errors=data["errors"])
         result = {
             "callname": self.context.get("callname"),
-            "result": RESPONSE_MAP[self.context.get('callname')]\
-                        .dump(self.get_result(data))
+            "result": RESPONSE_MAP[self.context.get('callname')]
+                      .dump(self.get_result(data))
         }
         return Result(**result)
 
