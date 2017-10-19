@@ -40,6 +40,7 @@ class CoinigyResponseSchema(ResponseSchema):
 
 class CoinigyRequestSchema(RequestSchema):
     """Schema defining how to send a request to the API"""
+    pass
 
     def get_result(self, data):
         """Return the actual result data"""
