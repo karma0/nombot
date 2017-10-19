@@ -8,7 +8,8 @@ import pandas as pd  # pylint: disable=import-error
 
 from core.log import LoggerMixin
 from api.requestor import Req
-from api.base import IApi, ApiErrorMixin, ResponseSchema
+from api.base import IApi, ApiErrorMixin
+from api.schema import ResponseSchema
 from api.websock import SockMixin, SockChannel
 
 from generics.exchange import NotificationSchema
