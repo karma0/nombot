@@ -20,7 +20,6 @@ class AppBuilder(LoggerMixin):
             self.log.debug(f"Found configured service: {api}")
             for api_cls in api_classes:
                 if api_cls.name == api:
-                    self.log.debug(f"Instantiating API: {api}")
                     self.api_contexts[api] = \
                         self.create_api_context(api_cls).data
                 else:
@@ -47,13 +46,10 @@ class AppBuilder(LoggerMixin):
         # call run with receive callback function
         self.api.run()
 
-    def receive(self, results):
+    def receive(self, result):
         """Pass an API result down the pipeline"""
-        data = {
-            "result": results,
-            "api_contexts": self.api_contexts
-        }
-        self.strat.execute(StrategyContextSchema().load(data))
+        result["api_contexts"] = self.api_contexts
+        self.strat.execute(StrategyContextSchema().load(result))
 
     def shutdown(self):
         """Shut it down"""

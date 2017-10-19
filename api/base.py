@@ -21,6 +21,7 @@ class IApi:
     # Use name to create a name for your api interface, and use the same
     #  name in your config
     name = "default"
+    result_schema = None
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""

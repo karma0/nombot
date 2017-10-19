@@ -38,7 +38,7 @@ class AccountSchema(ResultSchema):
     exch_name = f.Str(required=True)
     auth_active = f.Str()
     auth_trade = f.Str()
-    auth_updated = f.DateTime()
+    auth_updated = f.Str()
 
 
 class RefreshBalanceSchema(Schema):
@@ -67,7 +67,7 @@ class OrderSchema(ResultSchema):
     order_price_type = f.Str(required=True)
     order_status = f.Str(required=True)
     quantity = f.Float(required=True)
-    order_time = f.DateTime(required=True)
+    order_time = f.Str(required=True)
     foreign_order_id = f.Str()
     auth_id = f.Str(required=True)
     auth_nickname = f.Str()
@@ -91,7 +91,7 @@ class AlertSchema(ResultSchema):
     price = f.Float(required=True)
     operator = f.Str()  # <,>
     alert_history_id = f.Str()
-    timestamp = f.DateTime(required=True)
+    timestamp = f.Str(required=True)
     alert_price = f.Float(required=True)
     alert_note = f.Str()
     operator_text = f.Str()
@@ -112,7 +112,7 @@ class FavoriteTickSchema(ResultSchema):
     exch_name = f.Str(required=True)
     primary_currency_name = f.Str(required=True)
     secondary_currency_name = f.Str(required=True)
-    server_time = f.DateTime(required=True)
+    server_time = f.Str(required=True)
     last_price = f.Float(required=True)
     prev_price = f.Float(required=True)
     high_trade = f.Float(required=True)
@@ -128,9 +128,9 @@ class NewsItemSchema(ResultSchema):
     url = f.Str(required=True)
     title = f.Str(required=True)
     pubDate = f.Str(required=True)
-    timestamp = f.DateTime(required=True)
+    timestamp = f.Str(required=True)
     feed_id = f.Int(required=True)
-    published_date = f.DateTime(required=True)
+    published_date = f.Str(required=True)
     feed_name = f.Str(required=True)
     feed_url = f.Str(required=True)
     feed_enabled = f.Int(required=True)
@@ -234,7 +234,7 @@ class OrderItemSchema(MarketDataItemSchema):
 
 class HistoryItemSchema(MarketDataItemSchema):
     """A single order history item"""
-    time_local = f.DateTime(required=True)
+    time_local = f.Str(required=True)
     type = f.Str(required=True)
 
 
@@ -288,6 +288,6 @@ class TickSchema(ResultSchema):
     high_trade = f.Float(required=True)
     low_trade = f.Float(required=True)
     current_volume = f.Float(required=True)
-    timestamp = f.DateTime(required=True)
+    timestamp = f.Str(required=True)
     ask = f.Float(required=True)
     bid = f.Float(required=True)

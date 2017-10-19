@@ -23,6 +23,5 @@ class ApiContextSchema(Schema):
 
 class StrategyContextSchema(Schema):
     """Context to share information among Strategies"""
-    api_contexts = fields.List(
-        fields.Nested(ApiContextSchema(exclude="credentials")))
+    api_contexts = fields.Dict()
     result = fields.Nested(ResultSchema())

@@ -30,7 +30,6 @@ class ApiMetaAdapter(LoggerMixin):
 
         self.create_logger()
 
-        self.log.debug(f"Launching API contexts: {api_contexts}")
         for name, context in api_contexts.items():
             #wsock = WsAdapterFactory()
             #wsock.product.interface(context)
@@ -115,15 +114,10 @@ class ApiAdapter(ApiProduct):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
         try:
-            resp_sch = self.api.result_schema.load(result)
+            schema = self.api.result_schema()
+            schema.context['callname'] = callname
+            resp_sch = schema.load(result)
         except:
             raise Exception(f"""Could not parse response for {callname}\n \
                             Errors: {resp_sch["errors"]}""")
-        print(f"""RESP_SCH!{resp_sch.data["data"]}""")
-        # TODO: Leave this up to the Coinigy API
-        try:
-            loaded_sch = RESPONSE_MAP.get(callname).load(resp_sch.data["data"])
-            return loaded_sch.data
-        except:
-            raise Exception(f"""Could not parse response for {callname}\n \
-                            Errors: {loaded_sch["errors"]}""")
+        return resp_sch

@@ -2,9 +2,7 @@
 Generic API Interface, mixin, and request/response maps/types
 """
 
-import abc
-
-from marshmallow import fields, Schema, pre_load
+from marshmallow import fields, Schema, post_load
 
 from generics import exchange as X
 
@@ -36,23 +34,35 @@ REQUEST_MAP = {
 }
 
 
+class Result:
+    """A bare result object"""
+    def __init__(self, **kwargs):
+        self.callname = kwargs.get('callname', None)
+        self.result = kwargs.get('result', None)
+        self.errors = kwargs.get('errors', None)
+
+
 class ResponseSchema(Schema):
     """Schema defining the data structure the API will respond with"""
-    call = fields.Str()
     errors = fields.Dict()
 
-    #@pre_load
-    #def find_schema(self, in_data):
-    #    """Parse the incoming schema"""
-    #    if "errors" in in_data:
-    #        return in_data
-    #    print(f"IN_DATA!{in_data}")
-    #    in_data["data"] = RESPONSE_MAP[in_data["call"]]\
-    #        .loads(in_data["data"], many=True)\
-    #        .data
-    #    return in_data
+    def get_result(self, data):
+        """Retrieve the result from the parsed object"""
+        return data.get("result", "")
+
+    @post_load
+    def populate_data(self, data):
+        """Parse the incoming schema"""
+        if "errors" in data:
+            return Result(errors=data["errors"])
+        result = {
+            "callname": self.context.get("callname"),
+            "result": RESPONSE_MAP[self.context.get('callname')]\
+                        .dump(self.get_result(data))
+        }
+        return Result(**result)
 
     class Meta:
         """Stricty"""
         strict = True
-        additional = ("data",)
+        additional = ("result",)

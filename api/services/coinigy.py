@@ -28,6 +28,15 @@ class CoinigyResponseSchema(ResponseSchema):
             in_data["errors"] = dict()
             in_data["errors"][in_data["err_num"]] = in_data["err_msg"]
 
+    def get_result(self, data):
+        """Return the actual result data"""
+        return data.get("data", "")
+
+    class Meta:
+        """Add 'data' field"""
+        strict = True
+        additional = ("data",)
+
 
 class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
@@ -39,7 +48,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
-        self.result_schema = CoinigyResponseSchema()
+        self.result_schema = CoinigyResponseSchema
 
         # ApiContext
         self.context = context
@@ -74,13 +83,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         if query is not None:
             payload.update(query)
 
-        self.log.debug(f"URL: {url}")
-        self.log.debug(f"Payload: {payload}")
-
         res = self.req.post(url, data=payload)
-
-        self.log.debug(f"STATUS: {res.status_code}")
-        self.log.debug(f"RESPONSE: {res.text}")
 
         if res.status_code > 299:
             self.log.error(f"URL: {url}")
