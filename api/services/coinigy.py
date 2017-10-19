@@ -38,6 +38,19 @@ class CoinigyResponseSchema(ResponseSchema):
         additional = ("data",)
 
 
+class CoinigyRequestSchema(RequestSchema):
+    """Schema defining how to send a request to the API"""
+
+    def get_result(self, data):
+        """Return the actual result data"""
+        return data.get("data", "")
+
+    class Meta:
+        """Add 'data' field"""
+        strict = True
+        additional = ("data",)
+
+
 class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
         This class implements coinigy's REST api as documented in the

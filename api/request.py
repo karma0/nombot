@@ -28,7 +28,8 @@ class Request:
 
 class RequestSchema(Schema):
     """Schema defining the data structure the API can be called with"""
-    errors = fields.Dict()
+    callname = fields.Str(required=True)
+    payload = fields.Dict()
 
     @post_load
     def populate_data(self, data):
@@ -45,4 +46,3 @@ class RequestSchema(Schema):
     class Meta:
         """Stricty"""
         strict = True
-        additional = ("request",)
