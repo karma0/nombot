@@ -104,10 +104,6 @@ class ApiAdapter(ApiProduct):
             self.api_context
             )
 
-    def runonce(self, context):
-        """Unpack API request from strategy context"""
-        pass
-
     def call(self, call):
         """Executed on each scheduled iteration"""
         method = getattr(self.api, call, None)

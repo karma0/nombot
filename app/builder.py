@@ -37,7 +37,7 @@ class AppBuilder(LoggerMixin):
             "conf": self.conf.get_api(cls.name),
             "calls": self.conf.get_api_calls(),
             "currencies": self.conf.get_currencies(),
-            "scratch": {},  # Used per-API to monitor state
+            "shared": {},  # Used per-API to monitor state
             "callback": self.receive
             })
 
