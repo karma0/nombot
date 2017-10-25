@@ -41,6 +41,7 @@ class ApiMetaAdapter(LoggerMixin):
 
     def run(self):
         """Executed on startup of application"""
+        # TODO: Make wsock threaded so as to not block API calls
         for wsock in self.wsocks:
             wsock.run()
         for api in self.apis:
@@ -99,8 +100,13 @@ class ApiAdapter(ApiProduct):
         # TODO: schedule loop
         self.api_context.get("callback")(
             {call: self.call(call) for call in
-             self.api_context.get("calls")}
+             self.api_context.get("calls")},
+            self.api_context
             )
+
+    def runonce(self, context):
+        """Unpack API request from strategy context"""
+        pass
 
     def call(self, call):
         """Executed on each scheduled iteration"""

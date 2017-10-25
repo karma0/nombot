@@ -162,7 +162,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         pass
 
     def get_accounts(self, eventname, error, data):
-        self.context["scratch"]["accounts"] = data["data"]
+        self.context["shared"]["accounts"] = data["data"]
 
     def get_channels(self, eventname, error, data):
         """
@@ -172,9 +172,9 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         if error:
             raise Exception(error)
 
-        self.context["scratch"]["all_channels"] = {}
+        self.context["shared"]["all_channels"] = {}
         for chan in data[0]:
-            self.context["scratch"]["all_channels"][chan["channel"]] = False
+            self.context["shared"]["all_channels"][chan["channel"]] = False
 
         for exch in self.context["conf"]["exchanges"]:
             for curr1 in self.context["currencies"]:

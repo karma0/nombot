@@ -46,9 +46,10 @@ class AppBuilder(LoggerMixin):
         # call run with receive callback function
         self.api.run()
 
-    def receive(self, result):
+    def receive(self, result, api_context):
         """Pass an API result down the pipeline"""
         result["api_contexts"] = self.api_contexts
+        result["api_context"] = api_context
         self.strat.execute(StrategyContextSchema().load(result))
 
     def shutdown(self):
