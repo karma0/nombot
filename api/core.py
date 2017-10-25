@@ -5,7 +5,6 @@ API Core
 from app.log import LoggerMixin
 from common.factory import Creator
 from api.websock import SockChannel
-from api.schema import REQUEST_MAP, RESPONSE_MAP, ResponseSchema
 
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods

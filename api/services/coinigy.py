@@ -9,7 +9,8 @@ import pandas as pd  # pylint: disable=import-error
 from app.log import LoggerMixin
 from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
-from api.schema import ResponseSchema
+from api.response import ResponseSchema
+from api.request import RequestSchema
 from api.websock import SockMixin, SockChannel
 
 from generics.exchange import NotificationSchema
@@ -40,8 +41,6 @@ class CoinigyResponseSchema(ResponseSchema):
 
 class CoinigyRequestSchema(RequestSchema):
     """Schema defining how to send a request to the API"""
-    pass
-
     def get_result(self, data):
         """Return the actual result data"""
         return data.get("data", "")
