@@ -30,9 +30,9 @@ class ApiMetaAdapter(LoggerMixin):
         self.create_logger()
 
         for name, context in api_contexts.items():
-            #wsock = WsAdapterFactory()
-            #wsock.product.interface(context)
-            #self.wsocks.append(wsock.product)
+            wsock = WsAdapterFactory()
+            wsock.product.interface(context)
+            self.wsocks.append(wsock.product)
 
             self.log.debug(f"Starting API: {name}")
             api = ApiAdapterFactory()
@@ -42,14 +42,15 @@ class ApiMetaAdapter(LoggerMixin):
     def run(self):
         """Executed on startup of application"""
         for wsock in self.wsocks:
-            wsock.run(wsock.api_context.get("callback"))
+            wsock.run()
         for api in self.apis:
             api.run()
 
     def shutdown(self):
         """Executed on shutdown of application"""
-        for wsock in self.wsocks:
-            wsock.run()
+        # TODO: Look into this vs. trap
+        #for wsock in self.wsocks:
+        #    wsock.shutdown()
         for api in self.apis:
             api.shutdown()
 
@@ -62,7 +63,6 @@ class ApiProduct:
 
     def interface(self, context):
         """Implement the interface for the adapter object"""
-        self.api = None
         self.api_context = context
 
     def shutdown(self):
@@ -86,7 +86,7 @@ class WsAdapter(ApiProduct):
             self
             .api_context
             .get("conf")
-            .get("subscriptions")(self.api_context.get("name")).items()
+            .get("subscriptions").items()
         ])
 
 

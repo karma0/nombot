@@ -65,6 +65,14 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
         # ApiContext
         self.context = context
+
+        # Websocket Auth
+        self.creds = {
+            'apiKey': self.context["conf"]["credentials"]["apikey"],
+            'apiSecret': self.context["conf"]["credentials"]["secret"],
+        }
+
+        # API Auth
         self.payload = {
             'X-API-KEY': self.context["conf"]["credentials"]["apikey"],
             'X-API-SECRET': self.context["conf"]["credentials"]["secret"],
@@ -149,8 +157,9 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         """
         Called by the websocket mixin
         """
-        self.sock.emitack("channels", None, self.get_channels)
-        self.sock.emitack("accounts", None, self.get_accounts)
+        #self.sock.emitack("channels", None, self.get_channels)
+        #self.sock.emitack("accounts", None, self.get_accounts)
+        pass
 
     def get_accounts(self, eventname, error, data):
         self.context["scratch"]["accounts"] = data["data"]

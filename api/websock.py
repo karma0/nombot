@@ -4,23 +4,29 @@ import json
 from socketclusterclient import Socketcluster
 
 from app.log import LoggerMixin
-from app.config import Conf
 
 
 class SockMixin:
     """Wrap and manage a websocket interface"""
-    def connect_ws(self, post_connect_callback, channels):
+    def connect_ws(self, post_connect_callback, channels, reconnect=False):
         """
         Connect to a websocket
         :channels:  List of SockChannel instances
         """
         self.post_conn_cb = post_connect_callback
         self.channels = channels
+        self.wsendpoint = self.context["conf"]["endpoints"].get("websocket")
+
+        # Skip connecting if we don't have any channels to listen to
+        if not channels:
+            return
+
+        # Connect, setting callbacks
         self.sock = Socketcluster.socket(self.wsendpoint)
         self.sock.setBasicListener(self.on_connect, self.on_connect_close,
                                    self.on_connect_error)
         self.sock.setAuthenticationListener(self.on_set_auth, self.on_auth)
-        self.sock.setreconnection(False)
+        self.sock.setreconnection(reconnect)
         self.sock.connect()
         self.log.info(f"Started websocket, listening on {self.wsendpoint}")
 
@@ -52,16 +58,19 @@ class SockMixin:
 
     def on_connect_close(self, sock):
         """Close received from websocket"""
-        self.log.info(f"Received close; shutting down websocket {self.wsendpoint}")
+        self.log.info(f"Received close; shutting down websocket \
+                      {self.wsendpoint}")
 
     def connect_channels(self):
+        """Connect to all of the channels"""
         for channel in self.channels:
             channel.connect(self.sock)
 
 
 class SockChannel(LoggerMixin):
     """Handles Socketcluster alive connections"""
-    name = 'channel' # For logging
+    name = 'channel'  # For logging
+
     def __init__(self, channel, response_type, callback):
         self.create_logger()
         self.sock = None
