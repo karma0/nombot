@@ -35,13 +35,13 @@ class RequestSchema(Schema):
     def populate_data(self, data):
         """Parse the incoming schema"""
         if "errors" in data:
-            return Result(errors=data["errors"])
+            return Request(errors=data["errors"])
         result = {
             "callname": self.context.get("callname"),
-            "result": RESPONSE_MAP[self.context.get('callname')]
-                      .dump(self.get_result(data))
+            "result":
+                REQUEST_MAP[self.context.get('callname')].dump(data)
         }
-        return Result(**result)
+        return Request(**result)
 
     class Meta:
         """Stricty"""
