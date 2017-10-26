@@ -118,7 +118,7 @@ class ApiAdapter(ApiProduct):
             schema = self.api.result_schema()
             schema.context['callname'] = callname
             resp_sch = schema.load(result)
-        except:
+        except:  # NOQA
             raise Exception(f"""Could not parse response for {callname}\n \
                             Errors: {resp_sch["errors"]}""")
         return resp_sch
