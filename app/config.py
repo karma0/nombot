@@ -20,7 +20,7 @@ class Conf(metaclass=Singleton):
         try:
             with open(filename) as data_file:
                 self.data = data_file.read()
-        except:
+        except:  # NOQA
             raise Exception(f"Could not source config file: {filename}")
 
         self.conf_schema = ConfSchema()
@@ -94,7 +94,7 @@ class Conf(metaclass=Singleton):
         """Returns a list of calls to the api to generate the context object"""
         try:
             return self.sani_data.get("api").get("calls").copy()
-        except:
+        except:  # NOQA
             raise Exception(f"Couldn't find call list for APIs")
 
     def get_api(self, name=None):
@@ -102,11 +102,11 @@ class Conf(metaclass=Singleton):
         if name is None:
             try:
                 return self.sani_data.get("api").copy()
-            except:
+            except:  # NOQA
                 raise Exception(f"Couldn't find the API configuration")
         try:
             return self.services_by_name.get(name).copy()
-        except:
+        except:  # NOQA
             raise Exception(f"Couldn't find the API configuration")
 
     def get_logger(self, name=None):

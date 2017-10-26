@@ -35,8 +35,11 @@ class ResponseSchema(Schema):
     """Schema defining the data structure the API will respond with"""
     errors = fields.Dict()
 
-    def get_result(self, data):
-        """Retrieve the result from the parsed object"""
+    def get_result(self, data):  # pylint: disable=no-self-use
+        """
+        Retrieve the result from the parsed object
+          ~~ Override this to match your API. ~~
+        """
         return data.get("result", "")
 
     @post_load
@@ -47,7 +50,7 @@ class ResponseSchema(Schema):
         result = {
             "callname": self.context.get("callname"),
             "result": RESPONSE_MAP[self.context.get('callname')]
-                      .dump(self.get_result(data))
+                      .dump(self.get_result(data))  # NOQA
         }
         return Result(**result)
 

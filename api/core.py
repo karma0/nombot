@@ -50,7 +50,7 @@ class ApiMetaAdapter(LoggerMixin):
     def shutdown(self):
         """Executed on shutdown of application"""
         # TODO: Look into this vs. trap
-        #for wsock in self.wsocks:
+        # for wsock in self.wsocks:
         #    wsock.shutdown()
         for api in self.apis:
             api.shutdown()

@@ -23,7 +23,7 @@ class CoinigyResponseSchema(ResponseSchema):
     err_msg = fields.Str()
 
     @pre_load
-    def combine_errors(self, in_data):
+    def combine_errors(self, in_data):  # pylint: disable=no-self-use
         """Convert the error to the expected output"""
         if "err_num" in in_data:
             in_data["errors"] = dict()
@@ -41,7 +41,7 @@ class CoinigyResponseSchema(ResponseSchema):
 
 class CoinigyRequestSchema(RequestSchema):
     """Schema defining how to send a request to the API"""
-    def get_result(self, data):
+    def get_result(self, data):  # pylint: disable=no-self-use
         """Return the actual result data"""
         return data.get("data", "")
 
@@ -157,14 +157,15 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         """
         Called by the websocket mixin
         """
-        #self.sock.emitack("channels", None, self.get_channels)
-        #self.sock.emitack("accounts", None, self.get_accounts)
+        # self.sock.emitack("channels", None, self.get_channels)
+        # self.sock.emitack("accounts", None, self.get_accounts)
         pass
 
-    def get_accounts(self, eventname, error, data):
+    def get_accounts(self, eventname, error, data):  # pylint: disable=unused-argument
+        """Get Accounts"""
         self.context["shared"]["accounts"] = data["data"]
 
-    def get_channels(self, eventname, error, data):
+    def get_channels(self, eventname, error, data):  # pylint: disable=unused-argument
         """
         Dynamically generate the websocket channels based on exchange and
         currency configurations and what the server reports available.
@@ -176,7 +177,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
         for chan in data[0]:
             self.context["shared"]["all_channels"][chan["channel"]] = False
 
-        for exch in self.context["conf"]["exchanges"]:
+        for exch in self.context["conf"]["exchanges"]:  # pylint: disable=too-many-nested-blocks
             for curr1 in self.context["currencies"]:
                 for curr2 in self.context["currencies"]:
                     for ortra in ["order", "trade"]:

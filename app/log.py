@@ -1,6 +1,5 @@
 """Log Util"""
 
-from common.factory import Creator
 from common.singleton import Singleton
 from common.logger import Logger as L
 from app.config import Conf
@@ -10,7 +9,7 @@ class Logger(metaclass=Singleton):
     """Shared loggers singleton"""
     def __init__(self):
         self.conf = Conf()
-        self.loggers = {}
+        self.loggers = {}  # type: dict
 
     def get(self, name):
         """Creates a logger if one doesn't exist"""

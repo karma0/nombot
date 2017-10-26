@@ -39,7 +39,7 @@ class SockMixin:
         """Message received from websocket"""
         self.log.info(f"Authenticated: {is_authenticated}")
 
-        def ack(eventname, error, data):
+        def ack(eventname, error, data):  # pylint: disable=unused-argument
             """Ack"""
             if error:
                 self.log.error(error)
@@ -48,15 +48,15 @@ class SockMixin:
 
         sock.emitack("auth", self.creds, ack)
 
-    def on_connect(self, sock):
+    def on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
         self.log.info("Connected to websocket {self.wsendpoint}")
 
-    def on_connect_error(self, sock, err):
+    def on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""
         self.log.error(err)
 
-    def on_connect_close(self, sock):
+    def on_connect_close(self, sock):  # pylint: disable=unused-argument
         """Close received from websocket"""
         self.log.info(f"Received close; shutting down websocket \
                       {self.wsendpoint}")

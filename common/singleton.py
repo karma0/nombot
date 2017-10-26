@@ -5,7 +5,7 @@ class Singleton(type):
     """
     Define an instance operation that lets clients access its unique instance
     """
-    def __init__(cls, name, bases, attrs, **kwargs):
+    def __init__(cls, name, bases, attrs, **kwargs):  # pylint: disable=unused-argument
         super().__init__(name, bases, attrs)
         cls._instance = None
 
