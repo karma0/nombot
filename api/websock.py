@@ -43,14 +43,19 @@ class SockMixin:
             """Ack"""
             if error:
                 self.log.error(error)
-            self.log.info(f"Token is {json.dumps(data, sort_keys=True)}")
+            #self.log.info(f"Token is {json.dumps(data, sort_keys=True)}")
+            self.log.info(f"Logged in. Listening on...")
+            for ch in self.channels:
+                ch.connect(self.sock)
+                self.log.info(f"\t{ch.channel}")
+
             self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
 
     def on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
-        self.log.info("Connected to websocket {self.wsendpoint}")
+        self.log.info(f"Connected to websocket {self.wsendpoint}")
 
     def on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""

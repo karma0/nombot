@@ -2,6 +2,8 @@
 API Core
 """
 
+from multiprocessing import Process
+
 from app.log import LoggerMixin
 from common.factory import Creator
 from api.websock import SockChannel
@@ -23,13 +25,13 @@ class ApiMetaAdapter(LoggerMixin):
     """Adapter of adapters for all API instantiations"""
     name = "api"
 
-    def __init__(self, api_contexts):
+    def __init__(self, contexts):
         self.apis = []  # type: list
         self.wsocks = []  # type: list
 
         self.create_logger()
 
-        for name, context in api_contexts.items():
+        for name, context in contexts.items():
             wsock = WsAdapterFactory()
             wsock.product.interface(context)
             self.wsocks.append(wsock.product)
@@ -41,7 +43,6 @@ class ApiMetaAdapter(LoggerMixin):
 
     def run(self):
         """Executed on startup of application"""
-        # TODO: Make wsock threaded so as to not block API calls
         for wsock in self.wsocks:
             wsock.run()
         for api in self.apis:
@@ -50,8 +51,8 @@ class ApiMetaAdapter(LoggerMixin):
     def shutdown(self):
         """Executed on shutdown of application"""
         # TODO: Look into this vs. trap
-        # for wsock in self.wsocks:
-        #    wsock.shutdown()
+        for wsock in self.wsocks:
+            wsock.shutdown()
         for api in self.apis:
             api.shutdown()
 
@@ -60,11 +61,11 @@ class ApiProduct:
     """ApiAdapterFactory Product interface"""
     def __init__(self):
         self.api = None
-        self.api_context = None
+        self.context = None
 
     def interface(self, context):
         """Implement the interface for the adapter object"""
-        self.api_context = context
+        self.context = context
 
     def shutdown(self):
         """Executed on shutdown of application"""
@@ -73,35 +74,43 @@ class ApiProduct:
 
 class WsAdapter(ApiProduct):
     """Adapter for WebSockets"""
+    thread = None
+
     def run(self):
         """
         Called by internal API subsystem to initialize websockets connections
         in the API interface
         """
-        self.api = self.api_context.get("cls")(self.api_context)
+        self.api = self.context.get("cls")(self.context)
 
-        # Initialize websocket with channels
-        self.api.connect_ws(self.api.on_ws_connect, [
-            SockChannel(channel, res_type, self.api_context.get("callback"))
-            for channel, res_type in
-            self
-            .api_context
-            .get("conf")
-            .get("subscriptions").items()
-        ])
+        # Initialize websocket in a thread with channels
+        self.thread = Process(target=self.api.connect_ws, args=(
+            self.api.on_ws_connect, [
+                SockChannel(channel, res_type, self.context.get("callback"))
+                for channel, res_type in
+                self
+                .context
+                .get("conf")
+                .get("subscriptions").items()
+            ]))
+        self.thread.start()
+
+    def shutdown(self):
+        """Executed on shutdown of websockets"""
+        self.thread.join()
 
 
 class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
     def run(self):
         """Executed on startup of application"""
-        self.api = self.api_context.get("cls")(self.api_context)
+        self.api = self.context.get("cls")(self.context)
 
         # TODO: schedule loop
-        self.api_context.get("callback")(
+        self.context.get("callback")(
             {call: self.call(call) for call in
-             self.api_context.get("calls")},
-            self.api_context
+             self.context.get("calls")},
+            self.context
             )
 
     def call(self, call):

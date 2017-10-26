@@ -18,6 +18,7 @@ class AppBuilder(LoggerMixin):
 
         for api in self.conf.get_api_services_by_name().keys():
             self.log.debug(f"Found configured service: {api}")
+            # Only build out APIs that have interfaces AND configurations
             for api_cls in api_classes:
                 if api_cls.name == api:
                     self.api_contexts[api] = \

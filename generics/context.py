@@ -1,5 +1,7 @@
 """Contexts for component integrations"""
 
+from multiprocessing import Lock
+
 from marshmallow import Schema, fields
 
 from generics.config import ApiServiceConfSchema
@@ -14,6 +16,7 @@ class ApiContextSchema(Schema):
     currencies = fields.List(fields.Str())
     shared = fields.Dict()
     callback = fields.Function()
+    lock = Lock()
 
     class Meta:
         """ApiContext metaparameters"""
