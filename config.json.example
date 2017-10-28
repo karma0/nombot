@@ -1,8 +1,13 @@
 {
   "api": {
-    "calls": [
-      "accounts"
-    ],
+    "ratelimit": 1,
+    "calls": {
+      "accounts": {
+        "rate": 3,
+        "priority": 1,
+        "arguments": null
+      }
+    },
     "services": [
       {
         "name": "coinigy",

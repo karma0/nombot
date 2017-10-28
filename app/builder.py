@@ -3,7 +3,7 @@ Build the context and pipeline; manage the API
 """
 from app.log import LoggerMixin
 from app.config import Conf
-from api.core import ApiMetaAdapter
+from app.api import ApiMetaAdapter
 from generics.context import ApiContextSchema, StrategyContextSchema
 
 

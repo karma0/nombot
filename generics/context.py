@@ -21,7 +21,7 @@ class ApiContextSchema(Schema):
     class Meta:
         """ApiContext metaparameters"""
         strict = True
-        additional = ("cls",)
+        additional = ("cls", "inst")
 
 
 class StrategyContextSchema(Schema):
