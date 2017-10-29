@@ -62,10 +62,12 @@ class ApiMetaAdapter(LoggerMixin):
 class ApiProduct:
     """ApiAdapterFactory Product interface"""
     thread = None
+    keep_going = True
 
     def __init__(self):
         self.api = None
         self.context = None
+        self.callback = None
 
     def interface(self, context):
         """Implement the interface for the adapter object"""
@@ -111,8 +113,8 @@ class ApiAdapter(ApiProduct):
         self.api = self.context.get("cls")(self.context)
         self.context["inst"] = self # This adapter can be used by strategies
 
-        """Loop on scheduler, calling calls"""
         def loop():
+            """Loop on scheduler, calling calls"""
             while self.keep_going:
                 for call, calldata in self.context.get("calls", {}).items():
                     self.call(call, **calldata)
@@ -121,18 +123,8 @@ class ApiAdapter(ApiProduct):
         self.thread = Process(target=loop)
         self.thread.start()
 
-    def call(self, call, arguments=None, rate=None, priority=None):
+    def call(self, callname, arguments=None, rate=None, priority=None):
         """Executed on each scheduled iteration"""
-        # See if a method override exists
-        method = getattr(self.api, call, None)
-
-        # Define a mock method if one doesn't exist
-        def mthd(call, *args):
-            return self.api.call(call, *args)
-
-        if not callable(method):
-            method = mthd
-
         # Setup scheduler arguments
         sched_args = {}  # type: dict
         if not rate is None:
@@ -140,29 +132,37 @@ class ApiAdapter(ApiProduct):
         if not priority is None:
             sched_args["priority"] = priority
 
-        # Schedule the call, generating results upon completion
-        return self.generate_result(method, arguments, call, sched_args)
+        # See if a method override exists
+        action = getattr(self.api, callname, None)
 
-    def generate_result(self, method, arguments, callname, sched_args):
-        """Generate a results object for delivery to the context object"""
-        # schedule api call
+        # Define a mock method if one doesn't exist
+        def mthd(*args):
+            """Call the API and generate the result for self.callback"""
+            if not callable(action):
+                return self.generate_result(callname, self.api.call(callname, *args))
+            return self.generate_result(callname, action(*args))
+
+        # Schedule the call, generating results upon completion
         if sched_args:
-            self.callback(method(arguments))
+            sched_args["action"] = action
+            if not arguments is None:
+                sched_args["arguments"] = arguments
+            self.scheduler.enter(**sched_args)
+
         else:
-            self.callback(method(arguments))
+            if not arguments is None:
+                mthd(*arguments)
+            else:
+                mthd()
+
+
+    def generate_result(self, callname, result):
+        """Generate a results object for delivery to the context object"""
 
         # Retrieve path from API class
         try:
             schema = self.api.result_schema()
             schema.context['callname'] = callname
-            resp_sch = schema.load(result)
+            self.callback(schema.load(result))
         except:  # NOQA
-            raise Exception(f"""Could not parse response for {callname}\n \
-                            Errors: {resp_sch["errors"]}""")
-        return resp_sch
-
-        # self.
-        # {call: self.call(call, **call) for call in
-        # self.context.get("calls")},
-        # self.context
-        # )
+            raise Exception(f"""Could not parse response for {callname}""")
