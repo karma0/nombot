@@ -27,30 +27,29 @@ class SockMixin:
         self.sock.setAuthenticationListener(self._on_set_auth, self._on_auth)
         self.sock.setreconnection(reconnect)
         self.sock.connect()
-        self.log.info(f"Started websocket, listening on {self.wsendpoint}")
 
     def _on_set_auth(self, sock, token):
         """Set Auth request received from websocket"""
         self.log.info(f"Token received: {token}")
         sock.setAuthtoken(token)
 
-    def _on_auth(self, sock, is_authenticated):
+    def _on_auth(self, sock, authenticated):  # pylint: disable=unused-argument
         """Message received from websocket"""
-        self.log.info(f"Authenticated: {is_authenticated}")
-
         def ack(eventname, error, data):  # pylint: disable=unused-argument
             """Ack"""
             if error:
                 self.log.error(error)
-            #self.log.info(f"Token is {json.dumps(data, sort_keys=True)}")
-            self.log.info(f"Logged in. Listening on...")
-            for chan in self.channels:
-                chan.connect(self.sock)
-                self.log.info(f"\t{chan.channel}")
-
-            self.post_conn_cb()
+            else:
+                self._connect_channels()
+                self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
+
+    def _connect_channels(self):
+        self.log.info(f"Connecting to channels...")
+        for chan in self.channels:
+            chan.connect(self.sock)
+            self.log.info(f"\t{chan.channel}")
 
     def _on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
@@ -58,24 +57,23 @@ class SockMixin:
 
     def _on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""
-        self.log.error(err)
+        if type(err) is SystemExit:
+            self.log.error(f"Shutting down websocket connection")
+        else:
+            self.log.error(f"Websocket error: {err}")
 
     def _on_connect_close(self, sock):  # pylint: disable=unused-argument
         """Close received from websocket"""
-        self.log.info(f"Received close; shutting down websocket \
+        self.log.info(f"Received close; shut down websocket \
                       {self.wsendpoint}")
-
-    def connect_channels(self):
-        """Connect to all of the channels"""
-        for chan in self.channels:
-            chan.connect(self.sock)
 
 
 class SockChannel(LoggerMixin):
     """Handles Socketcluster alive connections"""
     name = 'channel'  # For logging
 
-    def __init__(self, channel, response_type, callback):
+    def __init__(self, api, channel, response_type, callback):
+        self.api = api
         self.create_logger()
         self.sock = None
         self.channel = channel
@@ -88,5 +86,15 @@ class SockChannel(LoggerMixin):
         """We have liftoff!"""
         self.sock = sock
         self.sock.subscribe(self.channel)
-        self.sock.onchannel(self.channel, self.callback)
+        self.sock.onchannel(self.channel, self._generate_result)
         self.log.debug(f"Listening on channel: {self.channel}")
+
+    def _generate_result(self, channel, result):
+        """Generate the result object"""
+        try:
+            schema = self.api.result_schema()
+            schema.context['channel'] = channel
+            self.callback(schema.dump(result).data, self.api.context)
+        except:  # NOQA
+            raise Exception(f"""Could not parse item on channel {channel}; data:
+                    {result}""")

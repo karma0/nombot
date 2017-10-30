@@ -25,7 +25,7 @@ class IApi:
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""
-        pass
+        self.log.info(f"Shutting down API interface instance for {self.name}")
 
     @abc.abstractmethod
     def call(self, method, query=None, **args):

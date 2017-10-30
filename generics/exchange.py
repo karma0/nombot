@@ -291,3 +291,21 @@ class TickSchema(ResultSchema):
     timestamp = f.Str(required=True)
     ask = f.Float(required=True)
     bid = f.Float(required=True)
+
+
+class WsTradeChannel(ResultSchema):
+    """An item from a websocket trade channel"""
+    market_history_id = f.Int(required=True)
+    channel = f.Str(required=True)
+    exchange = f.Str(required=True)
+    marketid = f.Int(required=True)
+    label = f.Str(required=True)
+    tradeid = f.Str(required=True)
+    price = f.Float(required=True)
+    quantity = f.Float(required=True)
+    total = f.Float(required=True)
+    type = f.Str(required=True)
+    exchId = f.Int(required=True)
+    time = f.Str(required=True)
+    timestamp = f.Str(required=True)
+    time_local = f.Str(required=True)

@@ -52,7 +52,7 @@ class ApiMetaAdapter(LoggerMixin):
 
     def shutdown(self):
         """Executed on shutdown of application"""
-        # TODO: Look into this vs. trap
+        print(f"SHUTDOWN: {len(self.apis)}")
         for wsock in self.wsocks:
             wsock.shutdown()
         for api in self.apis:
@@ -77,8 +77,8 @@ class ApiProduct:
     def shutdown(self):
         """Executed on shutdown of application"""
         self.keep_going = False
-        self.api.shutdown()
-        self.thread.join()
+        if hasattr(self.api, "shutdown"):
+            self.api.shutdown()
 
 
 class WsAdapter(ApiProduct):
@@ -93,7 +93,7 @@ class WsAdapter(ApiProduct):
         # Initialize websocket in a thread with channels
         self.thread = Process(target=self.api.connect_ws, args=(
             self.api.on_ws_connect, [
-                SockChannel(channel, res_type, self.callback)
+                SockChannel(self.api, channel, res_type, self.callback)
                 for channel, res_type in
                 self
                 .context
@@ -158,8 +158,6 @@ class ApiAdapter(ApiProduct):
 
     def generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""
-        data = result.copy()
-
         # Retrieve path from API class
         try:
             schema = self.api.result_schema()

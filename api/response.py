@@ -20,12 +20,14 @@ RESPONSE_MAP = {
     "markets": X.MarketSchema(many=True),
     "data": X.AllMarketDataSchema(),
     "ticker": X.TickSchema(),
+    "ws_trade_ticker": X.WsTradeChannel(),
 }
 
 
 class Result:
     """A bare result object"""
     def __init__(self, **kwargs):
+        self.channel = kwargs.get('channel', None)
         self.callname = kwargs.get('callname', None)
         self.result = kwargs.get('result', None)
         self.errors = kwargs.get('errors', None)
@@ -48,6 +50,7 @@ class ResponseSchema(Schema):
         if "errors" in data:
             return Result(errors=data["errors"])
         result = {
+            "channel": self.context.get("channel"),
             "callname": self.context.get("callname"),
             "result": RESPONSE_MAP[self.context.get('callname')]
                       .dump(self.get_result(data))  # NOQA

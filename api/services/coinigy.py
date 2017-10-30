@@ -18,6 +18,7 @@ from generics.exchange import NotificationSchema
 
 class CoinigyResponseSchema(ResponseSchema):
     """Schema defining how the API will respond"""
+    event = fields.Str()  # for WS response
     notifications = fields.List(fields.Nested(NotificationSchema()))
     err_num = fields.Str()
     err_msg = fields.Str()

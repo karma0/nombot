@@ -1,6 +1,9 @@
 """
 Build the context and pipeline; manage the API
 """
+from signal import signal, SIGHUP, SIGINT
+import sys
+
 from app.log import LoggerMixin
 from app.config import Conf
 from app.api import ApiMetaAdapter
@@ -15,6 +18,10 @@ class AppBuilder(LoggerMixin):
         self.create_logger()
         self.conf = Conf()
         self.api_contexts = {}  # type: dict
+
+        self.exit = False
+        #signal(SIGINT, self.shutdown)
+        #signal(SIGHUP, self.shutdown)
 
         for api in self.conf.get_api_services_by_name().keys():
             self.log.debug(f"Found configured service: {api}")
@@ -49,11 +56,16 @@ class AppBuilder(LoggerMixin):
 
     def receive(self, result, api_context):
         """Pass an API result down the pipeline"""
+        self.log.debug(f"Putting data on the pipeline: {result}")
         result["api_contexts"] = self.api_contexts
         result["api_context"] = api_context
         self.strat.execute(StrategyContextSchema().load(result))
 
-    def shutdown(self):
+    def shutdown(self, signum, frame):  # pylint: disable=unused-argument
         """Shut it down"""
-        self.api.shutdown()
-        self.strat.shutdown()
+        if not self.exit:
+            self.exit = True
+            self.log.info(f"SIGTRAP!{signum};{frame}")
+            self.api.shutdown()
+            self.strat.shutdown()
+            #sys.exit(0)
