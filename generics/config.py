@@ -26,7 +26,7 @@ class ApiServiceConfSchema(Schema):
 
 class ApiConfSchema(Schema):
     """Log configuration object"""
-    calls = fields.List(fields.Str())
+    calls = fields.Dict()
     services = fields.List(fields.Nested(ApiServiceConfSchema()))
 
 

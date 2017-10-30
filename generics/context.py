@@ -12,7 +12,7 @@ class ApiContextSchema(Schema):
     """Used for sharing information about a single API between instances"""
     name = fields.Str(required=True)
     conf = fields.Nested(ApiServiceConfSchema())
-    calls = fields.List(fields.Str())
+    calls = fields.Dict()
     currencies = fields.List(fields.Str())
     shared = fields.Dict()
     callback = fields.Function()
@@ -27,5 +27,5 @@ class ApiContextSchema(Schema):
 class StrategyContextSchema(Schema):
     """Context to share information among Strategies"""
     api_contexts = fields.Dict()
-    api_context = fields.Nested(ApiContextSchema())
+    context = fields.Nested(ApiContextSchema())
     result = fields.Nested(ResultSchema())

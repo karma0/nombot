@@ -111,7 +111,7 @@ class ApiAdapter(ApiProduct):
     def run(self):
         """Executed on startup of application"""
         self.api = self.context.get("cls")(self.context)
-        self.context["inst"] = self # This adapter can be used by strategies
+        self.context["inst"] = self  # This adapter can be used by strategies
 
         def loop():
             """Loop on scheduler, calling calls"""
@@ -123,13 +123,13 @@ class ApiAdapter(ApiProduct):
         self.thread = Process(target=loop)
         self.thread.start()
 
-    def call(self, callname, arguments=None, rate=None, priority=None):
+    def call(self, callname, arguments=None, delay=None, priority=None):
         """Executed on each scheduled iteration"""
         # Setup scheduler arguments
         sched_args = {}  # type: dict
-        if not rate is None:
-            sched_args["rate"] = rate
-        if not priority is None:
+        if delay is not None:
+            sched_args["delay"] = delay
+        if priority is not None:
             sched_args["priority"] = priority
 
         # See if a method override exists
@@ -139,30 +139,32 @@ class ApiAdapter(ApiProduct):
         def mthd(*args):
             """Call the API and generate the result for self.callback"""
             if not callable(action):
-                return self.generate_result(callname, self.api.call(callname, *args))
+                return self.generate_result(
+                    callname, self.api.call(callname, *args))
             return self.generate_result(callname, action(*args))
 
         # Schedule the call, generating results upon completion
         if sched_args:
-            sched_args["action"] = action
-            if not arguments is None:
+            sched_args["action"] = mthd
+            if arguments is not None:
                 sched_args["arguments"] = arguments
             self.scheduler.enter(**sched_args)
 
         else:
-            if not arguments is None:
+            if arguments is not None:
                 mthd(*arguments)
             else:
                 mthd()
 
-
     def generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""
+        data = result.copy()
 
         # Retrieve path from API class
         try:
             schema = self.api.result_schema()
             schema.context['callname'] = callname
-            self.callback(schema.load(result))
+            self.callback(schema.dump(result).data, self.context)
         except:  # NOQA
-            raise Exception(f"""Could not parse response for {callname}""")
+            raise Exception(f"""Could not parse response for {callname}; data:
+            {result}""")

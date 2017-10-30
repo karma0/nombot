@@ -3,7 +3,7 @@
     "ratelimit": 1,
     "calls": {
       "accounts": {
-        "rate": 3,
+        "delay": 3,
         "priority": 1,
         "arguments": null
       }
