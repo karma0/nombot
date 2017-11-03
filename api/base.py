@@ -2,8 +2,6 @@
 Generic API Interface, mixin, and request/response maps/types
 """
 
-import abc
-
 
 class ApiErrorMixin:
     """Generic functions for performing validation and handling errors"""
@@ -25,32 +23,20 @@ class IApi:
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""
-        self.log.info(f"Shutting down API interface instance for {self.name}")
+        pass
 
-    @abc.abstractmethod
-    def call(self, method, query=None, **args):
+    def call(self, method, data=None, **args):
         """
         Generic interface to REST api
         :param method:  query name
-        :param query:   dictionary of inputs
+        :param data:   dictionary of inputs
         :param args:    keyword arguments added to the payload
         :return:
         """
         pass
 
-    @abc.abstractmethod
     def on_ws_connect(self):
         """
         Called by the websocket mixin
-        """
-        pass
-
-    @abc.abstractmethod
-    def data(self, data_type):
-        """
-        Common wrapper for data related queries
-        :param data_type:
-            currently supported are 'history', 'bids', 'asks', 'orders'
-        :return:
         """
         pass

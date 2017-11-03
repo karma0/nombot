@@ -21,6 +21,7 @@ RESPONSE_MAP = {
     "data": X.AllMarketDataSchema(),
     "ticker": X.TickSchema(),
     "ws_trade_ticker": X.WsTradeChannel(),
+    "Favorite": X.FavoriteTickSchema(many=True),
 }
 
 
@@ -50,7 +51,6 @@ class ResponseSchema(Schema):
         if "errors" in data:
             return Result(errors=data["errors"])
         result = {
-            "channel": self.context.get("channel"),
             "callname": self.context.get("callname"),
             "result": RESPONSE_MAP[self.context.get('callname')]
                       .dump(self.get_result(data))  # NOQA
@@ -61,3 +61,20 @@ class ResponseSchema(Schema):
         """Stricty"""
         strict = True
         additional = ("result",)
+
+
+class WSResponseSchema(ResponseSchema):
+    """
+    Schema defining the data structure from published messages on the websock
+    """
+    @post_load
+    def populate_data(self, data):
+        """Parse the incoming schema"""
+        if "errors" in data:
+            return Result(errors=data["errors"])
+        result = {
+            "channel": self.context.get("channel"),
+            "result": RESPONSE_MAP[self.MessageType]
+                      .dump(self.get_result(data))  # NOQA
+        }
+        return Result(**result)

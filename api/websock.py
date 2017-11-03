@@ -28,6 +28,21 @@ class SockMixin:
         self.sock.setreconnection(reconnect)
         self.sock.connect()
 
+    def on_ws_connect(self):
+        """
+        Called after websock is established; override me to further init
+        """
+        pass
+
+    def wscall(self, method, query=None, callback=None):
+        """Submit a request on the websocket"""
+        if callback is None:
+            self.sock.emit(method, query)
+        else:
+            self.sock.emitack(method, query, callback)
+
+    # Internal initialization callbacks...
+
     def _on_set_auth(self, sock, token):
         """Set Auth request received from websocket"""
         self.log.info(f"Token received: {token}")
@@ -57,7 +72,7 @@ class SockMixin:
 
     def _on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""
-        if type(err) is SystemExit:
+        if isinstance(err, SystemExit):
             self.log.error(f"Shutting down websocket connection")
         else:
             self.log.error(f"Websocket error: {err}")
@@ -92,7 +107,7 @@ class SockChannel(LoggerMixin):
     def _generate_result(self, channel, result):
         """Generate the result object"""
         try:
-            schema = self.api.result_schema()
+            schema = self.api.ws_result_schema()
             schema.context['channel'] = channel
             self.callback(schema.dump(result).data, self.api.context)
         except:  # NOQA

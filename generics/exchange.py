@@ -1,13 +1,32 @@
 """Generic exchange schemas"""
 
-from marshmallow import Schema
+from marshmallow import Schema, post_load
 from marshmallow import fields as f
+
+from common.dotobj import DotObj
+
+
+class GenericObject(DotObj):
+    """Generic object with dot or hash style get/set"""
+    pass
 
 
 class ApiFacadeSchema(Schema):
     """Used to define an API integration (facade)"""
     name = f.Str(required=True)
     call = f.Method(required=True)
+
+
+class RequestSchema(Schema):
+    """Generic API result (inherit to use a schema for result creation)"""
+    @post_load
+    def make_object(self, data):  # pylint: disable=no-self-use
+        """Generate an object for passing to the exchange API"""
+        return GenericObject(data)
+
+    class Meta:
+        """All results should be strict"""
+        strict = True
 
 
 class ResultSchema(Schema):
@@ -106,20 +125,18 @@ class AllAlertsSchema(ResultSchema):
 
 class FavoriteTickSchema(ResultSchema):
     """Tick item from favorites"""
-    exchmkt_id = f.Str(required=True)
-    mkt_name = f.Str(required=True)
+    exch_id = f.Int(required=True)
     exch_code = f.Str(required=True)
     exch_name = f.Str(required=True)
-    primary_currency_name = f.Str(required=True)
-    secondary_currency_name = f.Str(required=True)
-    server_time = f.Str(required=True)
-    last_price = f.Float(required=True)
-    prev_price = f.Float(required=True)
-    high_trade = f.Float(required=True)
-    low_trade = f.Float(required=True)
-    current_volume = f.Float(required=True)
-    fiat_market = f.Int()
-    btc_volume = f.Float()
+    mkt_id = f.Int(required=True)
+    exchmkt_id = f.Int(required=True)
+    display_name = f.Str(required=True)
+    mkt_name = f.Str(required=True)
+    primary_curr = f.Str(required=True)
+    base_curr = f.Str(required=True)
+    last_price = f.Int(required=True)
+    btc_volume_24 = f.Float(required=True)
+    volume_24 = f.Float(required=True)
 
 
 class NewsItemSchema(ResultSchema):
@@ -214,7 +231,7 @@ class MarketSchema(ResultSchema):
     exchmkt_id = f.Int(required=True)
 
 
-class MarketDataRequestSchema(Schema):
+class MarketDataRequestSchema(RequestSchema):
     """Request object for market data"""
     exchange_code = f.Str(required=True)
     exchange_market = f.Str(required=True)
@@ -274,7 +291,7 @@ class AllMarketDataSchema(MarketDataSchema):
     bids = f.List(f.Nested(OrderItemSchema()), required=True)
 
 
-class TickerRequestSchema(Schema):
+class TickerRequestSchema(RequestSchema):
     """Request object for ticker data"""
     exchange_code = f.Str(required=True)
     exchange_market = f.Str(required=True)

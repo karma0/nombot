@@ -8,7 +8,7 @@ import time
 
 from app.log import LoggerMixin
 from common.factory import Creator
-from api.websock import SockChannel
+from api.websock import SockChannel  # pylint: disable=import-error,no-name-in-module
 
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
