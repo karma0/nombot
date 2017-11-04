@@ -109,7 +109,7 @@ class WsAdapter(ApiProduct):
             schema.context['channel'] = channel
             self.callback(schema.dump(result).data, self.api.context)
         except:
-            raise Excetion(f"""Could not parse item on channel {channel}; data:
+            raise Exception(f"""Could not parse item on channel {channel}; data:
                       {result}""")
 
 class ApiAdapter(ApiProduct):
