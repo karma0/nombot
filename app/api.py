@@ -116,6 +116,7 @@ class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
     scheduler = sched.scheduler(time.time, time.sleep)
     keep_going = True
+    cls = None
 
     def run(self):
         """Executed on startup of application"""
@@ -143,25 +144,32 @@ class ApiAdapter(ApiProduct):
 
         # See if a method override exists
         action = getattr(self.api, callname, None)
+        if action is None:
+            try:
+                action = self.api.ENDPOINT_OVERRIDES.get(callname, None)
+            except AttributeError:
+                action = callname
+        if action is not None:
+            self.api.log.info(f"Using API's override for /{callname}: /{action}")
 
         # Define a mock method if one doesn't exist
-        def mthd(*args):
+        def mthd(args=None):
             """Call the API and generate the result for self.callback"""
             if not callable(action):
                 return self._generate_result(
-                    callname, self.api.call(callname, *args))
-            return self._generate_result(callname, action(*args))
+                    callname, self.api.call(action, args))
+            return self._generate_result(callname, action(args))
 
         # Schedule the call, generating results upon completion
         if sched_args:
             sched_args["action"] = mthd
             if arguments is not None:
-                sched_args["arguments"] = arguments
+                sched_args["argument"] = (arguments,)
             self.scheduler.enter(**sched_args)
 
         else:
             if arguments is not None:
-                mthd(*arguments)
+                mthd(arguments)
             else:
                 mthd()
 

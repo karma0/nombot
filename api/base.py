@@ -20,6 +20,7 @@ class IApi:
     #  name in your config
     name = "default"
     result_schema = None
+    ENDPOINT_OVERRIDES = None
 
     def shutdown(self):
         """Override to perform any shutdown necessary"""

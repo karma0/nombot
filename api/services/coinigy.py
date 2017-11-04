@@ -59,6 +59,14 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
     """
     name = "coinigy"
 
+    ENDPOINT_OVERRIDES = {
+        "history": "data",
+        "asks": "data",
+        "bids": "data",
+        "orders": "data",
+        "all": "data"
+    }
+
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
         self.result_schema = CoinigyResponseSchema
