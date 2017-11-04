@@ -7,6 +7,7 @@ from app.log import LoggerMixin
 from api.requestor import Req
 from api.base import IApi, ApiErrorMixin
 from api.response import ResponseSchema
+from api.request import RequestSchema
 from api.websock import SockMixin
 
 from generics.exchange import NotificationSchema
@@ -69,6 +70,7 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
+        self.request_schema =RequestSchema
         self.result_schema = CoinigyResponseSchema
         self.ws_result_schema = CoinigyWSResponseSchema
 

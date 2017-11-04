@@ -156,9 +156,11 @@ class ApiAdapter(ApiProduct):
         def mthd(args=None):
             """Call the API and generate the result for self.callback"""
             if not callable(action):
+                request = self._generate_request(action, args)
                 return self._generate_result(
                     callname, self.api.call(action, args))
-            return self._generate_result(callname, action(args))
+            request = self._generate_request(callname, args)
+            return self._generate_result(callname, action(request))
 
         # Schedule the call, generating results upon completion
         if sched_args:
@@ -172,6 +174,17 @@ class ApiAdapter(ApiProduct):
                 mthd(arguments)
             else:
                 mthd()
+
+    def _generate_request(self, callname, request):
+        """Generate a request object for delivery to the API"""
+        # Retrieve path from API class
+        try:
+            schema = self.api.request_schema()
+            schema.context['callname'] = callname
+            return schema.dump(request).data.get("payload")
+        except:  # NOQA
+            raise Exception(f"""Could not parse request for {callname}; data:
+            {request}""")
 
     def _generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""

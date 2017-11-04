@@ -32,16 +32,19 @@ class RequestSchema(Schema):
     payload = fields.Dict()
 
     @post_load
-    def populate_data(self, data):
-        """Parse the incoming schema"""
-        if "errors" in data:
-            return Request(errors=data["errors"])
-        result = {
-            "callname": self.context.get("callname"),
-            "result":
-                REQUEST_MAP[self.context.get('callname')].dump(data)
+    def make_request(self, data):
+        """Parse the outgoing schema"""
+        callname = self.context.get("callname"),
+        try:
+            payload = REQUEST_MAP[callname].dump(data)
+        except AttributeError:
+            payload = None
+
+        request = {
+            "callname": callname,
+            "payload": payload
         }
-        return Request(**result)
+        return Request(**request)
 
     class Meta:
         """Stricty"""

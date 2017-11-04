@@ -17,15 +17,15 @@ class Req(metaclass=Singleton):
         """Return a requests implementation"""
         return self.session
 
-    def call(self, method, data=None, **args):
+    def call(self, callname, data=None, **args):
         """
         Generic interface to REST apiGeneric interface to REST api
-        :param method:  query name
+        :param callname:  query name
         :param data:   dictionary of inputs
         :param args:    keyword arguments added to the payload
         :return:
         """
-        url = f"{self.url_base}/{method}"
+        url = f"{self.url_base}/{callname}"
         payload = self.payload.copy()
         payload.update(**args)
 
