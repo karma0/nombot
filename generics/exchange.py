@@ -10,26 +10,28 @@ class GenericObject(DotObj):
     """Generic object with dot or hash style get/set"""
     pass
 
-
-class ApiFacadeSchema(Schema):
-    """Used to define an API integration (facade)"""
-    name = f.Str(required=True)
-    call = f.Method(required=True)
-
-
-class RequestSchema(Schema):
-    """Generic API result (inherit to use a schema for result creation)"""
+class GenericSchema(Schema):
+    """Schema from which all other schemas should inherit"""
     @post_load
     def make_object(self, data):  # pylint: disable=no-self-use
         """Generate an object for passing to the exchange API"""
         return GenericObject(data)
 
+
+class ApiFacadeSchema(GenericSchema):
+    """Used to define an API integration (facade)"""
+    name = f.Str(required=True)
+    call = f.Method(required=True)
+
+
+class RequestSchema(GenericSchema):
+    """Generic API result (inherit to use a schema for result creation)"""
     class Meta:
         """All results should be strict"""
         strict = True
 
 
-class ResultSchema(Schema):
+class ResultSchema(GenericSchema):
     """Generic API result (inherit to use a schema for result creation)"""
     class Meta:
         """All results should be strict"""
@@ -60,7 +62,7 @@ class AccountSchema(ResultSchema):
     auth_updated = f.Str()
 
 
-class RefreshBalanceSchema(Schema):
+class RefreshBalanceSchema(GenericSchema):
     """Used to refresh a balance on an account"""
     auth_id = f.Str(required=True)
 
@@ -176,7 +178,7 @@ class OrderTypesCallSchema(ResultSchema):
     price_types = f.List(f.Nested(PriceTypeSchema()))
 
 
-class CreateAlertSchema(Schema):
+class CreateAlertSchema(GenericSchema):
     """Schema to generate a new alert"""
     exch_code = f.Str(required=True)  # BITF
     market_name = f.Str(required=True)  # BTC/USD
@@ -189,7 +191,7 @@ class AlertReferenceSchema(ResultSchema):
     alert_id = f.Int(required=True)
 
 
-class CreateOrderSchema(Schema):
+class CreateOrderSchema(GenericSchema):
     """Schema to generate a new order"""
     auth_id = f.Int(required=True)
     exch_id = f.Int(required=True)
@@ -216,7 +218,7 @@ class ExchangeSchema(ResultSchema):
     exch_url = f.Str(required=True)
 
 
-class ExchangeReferenceSchema(Schema):
+class ExchangeReferenceSchema(GenericSchema):
     """Used to request market data"""
     exchange_code = f.Str(required=True)
 
