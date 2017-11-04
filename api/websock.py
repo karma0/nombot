@@ -87,8 +87,7 @@ class SockChannel(LoggerMixin):
     """Handles Socketcluster alive connections"""
     name = 'channel'  # For logging
 
-    def __init__(self, api, channel, response_type, callback):
-        self.api = api
+    def __init__(self, channel, response_type, callback):
         self.create_logger()
         self.sock = None
         self.channel = channel
@@ -101,15 +100,5 @@ class SockChannel(LoggerMixin):
         """We have liftoff!"""
         self.sock = sock
         self.sock.subscribe(self.channel)
-        self.sock.onchannel(self.channel, self._generate_result)
+        self.sock.onchannel(self.channel, self.callback)
         self.log.debug(f"Listening on channel: {self.channel}")
-
-    def _generate_result(self, channel, result):
-        """Generate the result object"""
-        try:
-            schema = self.api.ws_result_schema()
-            schema.context['channel'] = channel
-            self.callback(schema.dump(result).data, self.api.context)
-        except:  # NOQA
-            raise Exception(f"""Could not parse item on channel {channel}; data:
-                    {result}""")

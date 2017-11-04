@@ -93,7 +93,7 @@ class WsAdapter(ApiProduct):
         # Initialize websocket in a thread with channels
         self.thread = Process(target=self.api.connect_ws, args=(
             self.api.on_ws_connect, [
-                SockChannel(self.api, channel, res_type, self.callback)
+                SockChannel(channel, res_type, self._generate_result)
                 for channel, res_type in
                 self
                 .context
@@ -102,6 +102,15 @@ class WsAdapter(ApiProduct):
             ]))
         self.thread.start()
 
+    def _generate_result(self, channel, result):
+        """Generate the result object"""
+        try:
+            schema = self.api.ws_result_schema()
+            schema.context['channel'] = channel
+            self.callback(schema.dump(result).data, self.api.context)
+        except:
+            raise Excetion(f"""Could not parse item on channel {channel}; data:
+                      {result}""")
 
 class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
@@ -139,9 +148,9 @@ class ApiAdapter(ApiProduct):
         def mthd(*args):
             """Call the API and generate the result for self.callback"""
             if not callable(action):
-                return self.generate_result(
+                return self._generate_result(
                     callname, self.api.call(callname, *args))
-            return self.generate_result(callname, action(*args))
+            return self._generate_result(callname, action(*args))
 
         # Schedule the call, generating results upon completion
         if sched_args:
@@ -156,7 +165,7 @@ class ApiAdapter(ApiProduct):
             else:
                 mthd()
 
-    def generate_result(self, callname, result):
+    def _generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
         try:
