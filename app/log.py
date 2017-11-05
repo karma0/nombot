@@ -2,13 +2,13 @@
 
 from common.singleton import Singleton
 from common.logger import Logger as L
-from app.config import Conf
+from app.config import AppConf
 
 
 class Logger(metaclass=Singleton):
     """Shared loggers singleton"""
     def __init__(self):
-        self.conf = Conf()
+        self.conf = AppConf()
         self.loggers = {}  # type: dict
 
     def get(self, name):
@@ -30,7 +30,7 @@ class Log(L):
     """
     def __init__(self, name):
         self.name = name
-        self.conf = Conf().get_logger(name)
+        self.conf = AppConf().get_logger(name)
         self.level = self.conf["level"]
 
         self.basicConfig(self.level)

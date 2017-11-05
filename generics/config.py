@@ -1,6 +1,15 @@
 """Configuration definition"""
 
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
+
+
+class Conf:
+    """Loads a sane configuration"""
+    def __init__(self, **config):
+        self.conf = config
+
+    def get(self, *args, **kwargs):
+        return self.conf.get(*args, **kwargs)
 
 
 class ApiEndpointConfSchema(Schema):
@@ -46,6 +55,11 @@ class ConfSchema(Schema):
     currencies = fields.List(fields.Str())
     logger = fields.Nested(LogConfSchema())
     api = fields.Nested(ApiConfSchema())
+
+    @post_load
+    def make_conf(self, data):  # pylint: disable=R0201
+        """Generate a configuration object"""
+        return Conf(**data)
 
     class Meta:
         """Make sure that we bail if we can't parse"""

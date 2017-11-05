@@ -20,7 +20,7 @@ class SockMixin:
         if not channels:
             return
 
-        # Connect, setting callbacks
+        # Create socket, connect, setting callbacks along the way
         self.sock = Socketcluster.socket(self.wsendpoint)
         self.sock.setBasicListener(self._on_connect, self._on_connect_close,
                                    self._on_connect_error)
@@ -84,7 +84,7 @@ class SockMixin:
 
 
 class SockChannel(LoggerMixin):
-    """Handles Socketcluster alive connections"""
+    """Channel object"""
     name = 'channel'  # For logging
 
     def __init__(self, channel, response_type, callback):
@@ -97,7 +97,7 @@ class SockChannel(LoggerMixin):
         self.log.debug(f"Creating channel: {self.channel}")
 
     def connect(self, sock):
-        """We have liftoff!"""
+        """Attach a given socket to a channel"""
         self.sock = sock
         self.sock.subscribe(self.channel)
         self.sock.onchannel(self.channel, self.callback)

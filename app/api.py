@@ -8,7 +8,7 @@ import time
 
 from app.log import LoggerMixin
 from common.factory import Creator
-from api.websock import SockChannel  # pylint: disable=import-error,no-name-in-module
+from api.websock import SockChannel  # pylint: disable=E0611,E0401
 
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
@@ -108,9 +108,10 @@ class WsAdapter(ApiProduct):
             schema = self.api.ws_result_schema()
             schema.context['channel'] = channel
             self.callback(schema.dump(result).data, self.api.context)
-        except:
+        except:  # NOQA
             raise Exception(f"""Could not parse item on channel {channel}; data:
                       {result}""")
+
 
 class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
@@ -150,7 +151,8 @@ class ApiAdapter(ApiProduct):
             except AttributeError:
                 action = callname
         if action is not None:
-            self.api.log.info(f"Using API's override for /{callname}: /{action}")
+            self.api.log.info(
+                f"Using API's override for /{callname}: /{action}")
 
         # Define a mock method if one doesn't exist
         def mthd(args=None):

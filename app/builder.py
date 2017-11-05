@@ -1,12 +1,9 @@
 """
 Build the context and pipeline; manage the API
 """
-from signal import signal, SIGHUP, SIGINT
-import sys
-
 from app.log import LoggerMixin
-from app.config import Conf
 from app.api import ApiMetaAdapter
+from app.config import AppConf
 from generics.context import ApiContextSchema, StrategyContextSchema
 
 
@@ -14,14 +11,14 @@ class AppBuilder(LoggerMixin):
     """Class that assembles and runs the application"""
     name = "builder"
 
-    def __init__(self, api_classes, strategy):
-        self.create_logger()
-        self.conf = Conf()
+    def __init__(self, api_classes, strategy, config_file=None):
+        self.conf = AppConf(config_file)
+
         self.api_contexts = {}  # type: dict
 
         self.exit = False
-        #signal(SIGINT, self.shutdown)
-        #signal(SIGHUP, self.shutdown)
+
+        self.create_logger()
 
         for api in self.conf.get_api_services_by_name().keys():
             self.log.debug(f"Found configured service: {api}")
@@ -68,4 +65,3 @@ class AppBuilder(LoggerMixin):
             self.log.info(f"SIGTRAP!{signum};{frame}")
             self.api.shutdown()
             self.strat.shutdown()
-            #sys.exit(0)

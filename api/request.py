@@ -34,9 +34,9 @@ class RequestSchema(Schema):
     @post_load
     def make_request(self, data):
         """Parse the outgoing schema"""
-        callname = self.context.get("callname"),
+        callname = self.context.get("callname")
         try:
-            payload = REQUEST_MAP[callname].dump(data)
+            payload = REQUEST_MAP[callname].dump(data)  # type: ignore
         except AttributeError:
             payload = None
 

@@ -50,9 +50,10 @@ class ResponseSchema(Schema):
         """Parse the incoming schema"""
         if "errors" in data:
             return Result(errors=data["errors"])
+        callname = self.context.get("callname")
         result = {
-            "callname": self.context.get("callname"),
-            "result": RESPONSE_MAP[self.context.get('callname')]
+            "callname": callname,
+            "result": RESPONSE_MAP[callname]  # type: ignore
                       .dump(self.get_result(data))  # NOQA
         }
         return Result(**result)
@@ -72,9 +73,10 @@ class WSResponseSchema(ResponseSchema):
         """Parse the incoming schema"""
         if "errors" in data:
             return Result(errors=data["errors"])
+        # pylint: disable=E1101
         result = {
             "channel": self.context.get("channel"),
-            "result": RESPONSE_MAP[self.MessageType]
+            "result": RESPONSE_MAP[self.MessageType]  # type: ignore
                       .dump(self.get_result(data))  # NOQA
         }
         return Result(**result)

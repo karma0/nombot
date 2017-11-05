@@ -1,11 +1,9 @@
-"""Coinigy API Facade
-"""
+"""Coinigy API Facade"""
 
 from marshmallow import fields, pre_load
 
 from app.log import LoggerMixin
 from api.requestor import Req
-from api.base import IApi, ApiErrorMixin
 from api.response import ResponseSchema
 from api.request import RequestSchema
 from api.websock import SockMixin
@@ -38,7 +36,7 @@ class CoinigyResponseSchema(ResponseSchema):
 
 
 class CoinigyWSResponseSchema(ResponseSchema):
-    """Schema defining the messag type from a websocket"""
+    """Schema defining the message type from a websocket"""
     MessageType = fields.Str(required=True)
 
     def get_result(self, data):
@@ -51,8 +49,7 @@ class CoinigyWSResponseSchema(ResponseSchema):
         additional = ("Data",)
 
 
-
-class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
+class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902
     """
         This class implements coinigy's REST api as documented in the
         documentation available at:
@@ -70,20 +67,20 @@ class Coinigy(IApi, ApiErrorMixin, LoggerMixin, SockMixin):
 
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
-        self.request_schema =RequestSchema
+        self.request_schema = RequestSchema
         self.result_schema = CoinigyResponseSchema
         self.ws_result_schema = CoinigyWSResponseSchema
 
         # ApiContext
         self.context = context
 
-        # Websocket Auth
+        # Websocket credentials object
         self.creds = {
             'apiKey': self.context["conf"]["credentials"]["apikey"],
             'apiSecret': self.context["conf"]["credentials"]["secret"],
         }
 
-        # API Auth
+        # API credetials object
         payload = {
             'X-API-KEY': self.context["conf"]["credentials"]["apikey"],
             'X-API-SECRET': self.context["conf"]["credentials"]["secret"],
