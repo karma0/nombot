@@ -5,18 +5,19 @@ Trading bot
 """
 
 from api.services.coinigy import Coinigy
-from core.builder import AppBuilder
-from core.config import Conf
+from app.builder import AppBuilder
 
-from strategies.strategy import Strategy
+from app.strategy import Strategy
 from strategies.print import Print
 from strategies.echo import Echo
 
 
-def main(strategies=[Print(), Echo()], apiclasses=[Coinigy], configfile=None):
+def main(strategies=None, apiclasses=None):
     """Main routine"""
-    # Grab configuration
-    conf = Conf(filename=configfile)
+    if strategies is None:
+        strategies = [Print(), Echo()]
+    if apiclasses is None:
+        apiclasses = [Coinigy]
 
     # Roll out pipeline
     strat = Strategy(*strategies)

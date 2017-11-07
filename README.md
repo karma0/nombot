@@ -17,6 +17,7 @@ able to pay for development services, that will solve the second.
 * `requests`
 * `numpy`
 * `pandas`
+* `marshmallow` for message passing, validation, and API message object definition.
 
 
 ## Key Features

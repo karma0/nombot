@@ -1,67 +1,92 @@
 """A websocket library"""
 
-import json
 from socketclusterclient import Socketcluster
 
-from core.log import LoggerMixin
-from core.config import Conf
+from app.log import LoggerMixin
 
 
 class SockMixin:
     """Wrap and manage a websocket interface"""
-    def connect_ws(self, post_connect_callback, channels):
+    def connect_ws(self, post_connect_callback, channels, reconnect=False):
         """
         Connect to a websocket
         :channels:  List of SockChannel instances
         """
         self.post_conn_cb = post_connect_callback
         self.channels = channels
-        self.sock = Socketcluster.socket(self.wsendpoint)
-        self.sock.setBasicListener(self.on_connect, self.on_connect_close,
-                                   self.on_connect_error)
-        self.sock.setAuthenticationListener(self.on_set_auth, self.on_auth)
-        self.sock.setreconnection(False)
-        self.sock.connect()
-        self.log.info(f"Started websocket, listening on {self.wsendpoint}")
+        self.wsendpoint = self.context["conf"]["endpoints"].get("websocket")
 
-    def on_set_auth(self, sock, token):
+        # Skip connecting if we don't have any channels to listen to
+        if not channels:
+            return
+
+        # Create socket, connect, setting callbacks along the way
+        self.sock = Socketcluster.socket(self.wsendpoint)
+        self.sock.setBasicListener(self._on_connect, self._on_connect_close,
+                                   self._on_connect_error)
+        self.sock.setAuthenticationListener(self._on_set_auth, self._on_auth)
+        self.sock.setreconnection(reconnect)
+        self.sock.connect()
+
+    def on_ws_connect(self):
+        """
+        Called after websock is established; override me to further init
+        """
+        pass
+
+    def wscall(self, method, query=None, callback=None):
+        """Submit a request on the websocket"""
+        if callback is None:
+            self.sock.emit(method, query)
+        else:
+            self.sock.emitack(method, query, callback)
+
+    # Internal initialization callbacks...
+
+    def _on_set_auth(self, sock, token):
         """Set Auth request received from websocket"""
         self.log.info(f"Token received: {token}")
         sock.setAuthtoken(token)
 
-    def on_auth(self, sock, is_authenticated):
+    def _on_auth(self, sock, authenticated):  # pylint: disable=unused-argument
         """Message received from websocket"""
-        self.log.info(f"Authenticated: {is_authenticated}")
-
-        def ack(eventname, error, data):
+        def ack(eventname, error, data):  # pylint: disable=unused-argument
             """Ack"""
             if error:
                 self.log.error(error)
-            self.log.info(f"Token is {json.dumps(data, sort_keys=True)}")
-            self.post_conn_cb()
+            else:
+                self._connect_channels()
+                self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
 
-    def on_connect(self, sock):
+    def _connect_channels(self):
+        self.log.info(f"Connecting to channels...")
+        for chan in self.channels:
+            chan.connect(self.sock)
+            self.log.info(f"\t{chan.channel}")
+
+    def _on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
-        self.log.info("Connected to websocket {self.wsendpoint}")
+        self.log.info(f"Connected to websocket {self.wsendpoint}")
 
-    def on_connect_error(self, sock, err):
+    def _on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""
-        self.log.error(err)
+        if isinstance(err, SystemExit):
+            self.log.error(f"Shutting down websocket connection")
+        else:
+            self.log.error(f"Websocket error: {err}")
 
-    def on_connect_close(self, sock):
+    def _on_connect_close(self, sock):  # pylint: disable=unused-argument
         """Close received from websocket"""
-        self.log.info(f"Received close; shutting down websocket {self.wsendpoint}")
-
-    def connect_channels(self):
-        for channel in self.channels:
-            channel.connect(self.sock)
+        self.log.info(f"Received close; shut down websocket \
+                      {self.wsendpoint}")
 
 
 class SockChannel(LoggerMixin):
-    """Handles Socketcluster alive connections"""
-    name = 'channel' # For logging
+    """Channel object"""
+    name = 'channel'  # For logging
+
     def __init__(self, channel, response_type, callback):
         self.create_logger()
         self.sock = None
@@ -72,7 +97,7 @@ class SockChannel(LoggerMixin):
         self.log.debug(f"Creating channel: {self.channel}")
 
     def connect(self, sock):
-        """We have liftoff!"""
+        """Attach a given socket to a channel"""
         self.sock = sock
         self.sock.subscribe(self.channel)
         self.sock.onchannel(self.channel, self.callback)

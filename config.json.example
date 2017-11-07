@@ -1,13 +1,19 @@
 {
   "api": {
-    "calls": [
-      "accounts"
-    ],
-    "services": {
-      "coinigy": {
+    "ratelimit": 1,
+    "calls": {
+      "accounts": {
+        "delay": 3,
+        "priority": 1,
+        "arguments": null
+      }
+    },
+    "services": [
+      {
+        "name": "coinigy",
         "credentials": {
-          "apiKey": "xxx",
-          "apiSecret": "xxx"
+          "apikey": "xxx",
+          "secret": "xxx"
         },
 
         "subscriptions": {
@@ -24,7 +30,7 @@
           "websocket": "wss://sc-02.coinigy.com/socketcluster/"
         }
       }
-    }
+    ]
   },
 
   "logger": {

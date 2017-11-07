@@ -2,7 +2,7 @@
 Simple Market Maker strategy
 """
 
-from strategies.strategy import IStrategy
+from app.strategy import IStrategy
 from algorithms.echo import echo
 
 

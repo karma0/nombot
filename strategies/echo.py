@@ -2,7 +2,7 @@
 Simple echo strategy to output an "ECHO"
 """
 
-from strategies.strategy import IStrategy
+from app.strategy import IStrategy
 from algorithms.echo import echo
 
 
