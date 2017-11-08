@@ -1,8 +1,11 @@
+"""Coinigy strategy, subscribes to all favorited channels"""
+
+from app.strategy import IStrategy
 
 
-class CoinigyStrategy(IStrategy):
-
-    def get_accounts(self, eventname, error, data):  # pylint: disable=unused-argument
+class CoinigyFacade:
+    """Facade to engage with Coinigy API"""
+    def get_accounts(self, eventname, error, data):  # pylint: disable=W0613
         """Get Accounts"""
         self.context["shared"]["accounts"] = data["data"]
 
@@ -41,3 +44,11 @@ class CoinigyStrategy(IStrategy):
 
         # SockMixin
         self.connect_channels()
+
+
+class CoinigyStrategy(IStrategy):
+    """Strategy to supplement/act upon Coinigy API events"""
+
+    def bind(self, context):
+        """Bind actions to the strategy context"""
+        return context
