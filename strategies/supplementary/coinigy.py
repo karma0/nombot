@@ -5,9 +5,13 @@ from app.strategy import IStrategy
 
 class CoinigyFacade:
     """Facade to engage with Coinigy API"""
-    def get_accounts(self, eventname, error, data):  # pylint: disable=W0613
-        """Get Accounts"""
-        self.context["shared"]["accounts"] = data["data"]
+    ws_prepped = False
+
+    def __init__(self, context):
+        self.context = context
+        if not self.ws_prepped:
+            for api_ctx in context.get("api_contexts").items():
+                if api_ctx.get("coinigy", None) is not None:
 
     def get_channels(self, eventname, error, data):  # pylint: disable=unused-argument
         """
@@ -48,7 +52,9 @@ class CoinigyFacade:
 
 class CoinigyStrategy(IStrategy):
     """Strategy to supplement/act upon Coinigy API events"""
-
     def bind(self, context):
         """Bind actions to the strategy context"""
+        result = context.get("result")
+        if result.context.get("callname") == "accounts":
+            context.get("api_context")
         return context
