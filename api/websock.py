@@ -57,15 +57,16 @@ class SockMixin:
             if error:
                 self.log.error(error)
             else:
-                self._connect_channels()
+                self.connect_channels(self.channels)
                 self.is_connected_ws = True
                 self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
 
-    def _connect_channels(self):
+    def connect_channels(self, channels):
+        """Connect the provided channels"""
         self.log.info(f"Connecting to channels...")
-        for chan in self.channels:
+        for chan in channels:
             chan.connect(self.sock)
             self.log.info(f"\t{chan.channel}")
 

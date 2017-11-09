@@ -56,6 +56,7 @@ class AppBuilder(LoggerMixin):
         self.log.debug(f"Putting data on the pipeline: {result}")
         result["api_contexts"] = self.api_contexts
         result["api_context"] = api_context
+        result["strategy"] = {}  # Shared strategy data
         self.strat.execute(StrategyContextSchema().load(result))
 
     def shutdown(self, signum, frame):  # pylint: disable=unused-argument
