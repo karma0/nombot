@@ -5,21 +5,38 @@ from app.strategy import IStrategy
 
 class CoinigyFacade:
     """Facade to engage with Coinigy API"""
-    ws_prepped = False
+    _call_lookup = {
+        "accounts": "populate_accounts",
+    }
 
     def __init__(self, context):
         self.context = context
-        if not self.ws_prepped:
-            for api_ctx in context.get("api_contexts").items():
-                if api_ctx.get("coinigy", None) is not None:
+        self.result = self.context.get("result")
+        self.api_ctx = self.context.get("api_context")
+        self.api_ctxs = self.context.get("api_contexts")
 
-    def get_channels(self, eventname, error, data):  # pylint: disable=unused-argument
+    def _lookup(self, callname):
+        """Return a callable function based on the name"""
+        return self._call_lookup.get(callname, lambda x: x)
+
+    def parse_result(self):
+        """Return an update to the context based on the result received"""
+        return self._call_lookup.get(
+                self.result.context["callname"],
+                lambda x: x
+            )()
+
+    def populate_accounts(self):
+        """Return an accounts object for supplementation"""
+        return {self.result.context["callname"]: self.result}
+
+    def connect_all_channels(self, eventname, error, data):  # pylint: disable=unused-argument
         """
         Dynamically generate the websocket channels based on exchange and
         currency configurations and what the server reports available.
         """
-        if error:
-            raise Exception(error)
+        for api_ctx in context.get("api_contexts").items():
+            if api_ctx.get("coinigy", None) is not None:
 
         self.context["shared"]["all_channels"] = {}
         for chan in data[0]:
@@ -52,9 +69,24 @@ class CoinigyFacade:
 
 class CoinigyStrategy(IStrategy):
     """Strategy to supplement/act upon Coinigy API events"""
+    _data = {
+        ws_prepped: False,
+        accounts: [],
+    }
+
     def bind(self, context):
         """Bind actions to the strategy context"""
-        result = context.get("result")
-        if result.context.get("callname") == "accounts":
-            context.get("api_context")
+        cf = CoinigyFacade(result, api_ctx)
+
+        # Find the websocket and connect_all_channels on it
+        if not self.ws_prepped:
+            for ctx in context.get("api_contexts").get("coinigy"):
+                if ctx.inst.is_connected_ws:
+                    cf.connect_all_channels(ctx.inst)
+                    self.ws_prepped = True
+                    break
+
+        # Supplement
+        context["coinigy"] = _data
+
         return context

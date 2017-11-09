@@ -7,6 +7,8 @@ from app.log import LoggerMixin
 
 class SockMixin:
     """Wrap and manage a websocket interface"""
+    is_connected_ws = False
+
     def connect_ws(self, post_connect_callback, channels, reconnect=False):
         """
         Connect to a websocket
@@ -56,6 +58,7 @@ class SockMixin:
                 self.log.error(error)
             else:
                 self._connect_channels()
+                self.is_connected_ws = True
                 self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
@@ -72,6 +75,7 @@ class SockMixin:
 
     def _on_connect_error(self, sock, err):  # pylint: disable=unused-argument
         """Error received from websocket"""
+        self.is_connected_ws = False
         if isinstance(err, SystemExit):
             self.log.error(f"Shutting down websocket connection")
         else:
