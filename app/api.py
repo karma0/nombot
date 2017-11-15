@@ -13,13 +13,13 @@ from api.websock import SockChannel  # pylint: disable=E0611,E0401
 
 class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
     """Generator of WsAdapters"""
-    def _factory_method(self):
+    def _factory_method(self, *args, **kwargs):
         return WsAdapter()
 
 
 class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
     """Generator of ApiAdapters"""
-    def _factory_method(self):
+    def _factory_method(self, *args, **kwargs):
         return ApiAdapter()
 
 
@@ -159,8 +159,12 @@ class ApiAdapter(ApiProduct):
             """Call the API and generate the result for self.callback"""
             if not callable(action):
                 request = self._generate_request(action, args)
-                return self._generate_result(
-                    callname, self.api.call(action, args))
+                if action is None:
+                    return self._generate_result(
+                        callname, self.api.call(callname, args))
+                else:
+                    return self._generate_result(
+                        callname, self.api.call(action, args))
             request = self._generate_request(callname, args)
             return self._generate_result(callname, action(request))
 
