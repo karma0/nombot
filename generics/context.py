@@ -32,4 +32,4 @@ class StrategyContextSchema(Schema):
 
     class Meta:
         """Strategy Context metaparameters"""
-        additional = ("strategy")  # Where the meat of strategy data is stored
+        additional = ("strategy",)  # Where the meat of strategy data is stored
