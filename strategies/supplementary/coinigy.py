@@ -65,7 +65,7 @@ class CoinigyParser(Product):
 
     def __init__(self, strategy_data, context):
         self.strategy_data = strategy_data
-        self.context = context
+        self.context = context.data
         self.result = self.context.get("result")
         self.api_ctx = self.context.get("context")
         self.api_ctxs = self.context.get("api_contexts")
