@@ -9,6 +9,7 @@ class Conf:
         self.conf = config
 
     def get(self, *args, **kwargs):
+        """Get something"""
         return self.conf.get(*args, **kwargs)
 
 

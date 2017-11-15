@@ -80,8 +80,8 @@ class CoinigyParser(Product):
             {self.result.context["callname"]: self.result})
 
     def interface(self):
-        """Return an update to the context based on the result received"""
-        return self._call_lookup.get(self.result.context["callname"])()
+        """Call the update to the context based on the result received"""
+        self._call_lookup.get(self.result.context["callname"])()
 
 
 class CoinigyStrategy(IStrategy):
