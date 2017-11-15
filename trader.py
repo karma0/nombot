@@ -8,6 +8,7 @@ from api.services.coinigy import Coinigy
 from app.builder import AppBuilder
 
 from app.strategy import Strategy
+from strategies.supplementary.coinigy import CoinigyStrategy
 from strategies.print import Print
 from strategies.echo import Echo
 
@@ -15,7 +16,11 @@ from strategies.echo import Echo
 def main(strategies=None, apiclasses=None):
     """Main routine"""
     if strategies is None:
-        strategies = [Print(), Echo()]
+        strategies = [
+            CoinigyStrategy(),
+            Print(),
+            Echo()
+        ]
     if apiclasses is None:
         apiclasses = [Coinigy]
 
