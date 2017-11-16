@@ -65,9 +65,9 @@ class CoinigyParser(Product):
 
     def __init__(self, strategy_data, context):
         self.strategy_data = strategy_data
-        self.context = context.data
+        self.context = context
         self.result = self.context.get("result")
-        self.api_ctx = self.context.get("context")
+        self.api_ctx = self.context.get("conf")
         self.api_ctxs = self.context.get("api_contexts")
 
     def _lookup(self, callname):
@@ -76,18 +76,23 @@ class CoinigyParser(Product):
 
     def _default_parser(self):
         """Return a result object for supplementation"""
-        return self.strategy_data.update(
-            {self.result.context["callname"]: self.result})
+        return self.strategy_data["coinigy"].update(
+            {self.result.callname: self.result})
 
     def interface(self):
         """Call the update to the context based on the result received"""
-        self._call_lookup.get(self.result.context["callname"])()
+        if self.result.callname is not None:
+            self._lookup(self.result.callname)()
+        elif self.result.channel is not None:
+            self._lookup(self.result.channel)()
 
 
 class CoinigyStrategy(IStrategy):
     """Strategy to supplement/act upon Coinigy API events"""
     ws_prepped = False
-    _strategy_data = {}  # type: dict
+    _strategy_data = {
+        "coinigy": {}
+    }
 
     def bind(self, context):
         """Bind actions to the strategy context"""
@@ -95,9 +100,9 @@ class CoinigyStrategy(IStrategy):
         parser.product.interface()
 
         # Find the websocket and connect_all_channels on it
-        if not self.ws_prepped:
-            api_facade = CoinigyFacade(context.api_context)
-            for ctx in context.api_contexts.get("coinigy"):
+        if self.ws_prepped:
+            api_facade = CoinigyFacade(context.get("api_context"))
+            for ctx in context.get("api_contexts").get("coinigy"):
                 if ctx.inst.is_connected_ws:
                     api_facade.connect_all_channels()
                     self.ws_prepped = True

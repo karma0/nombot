@@ -51,13 +51,16 @@ class AppBuilder(LoggerMixin):
         # call run with receive callback function
         self.api.run()
 
-    def receive(self, result, api_context):
+    def receive(self, data, api_context):
         """Pass an API result down the pipeline"""
-        self.log.debug(f"Putting data on the pipeline: {result}")
-        result["api_contexts"] = self.api_contexts
-        result["api_context"] = api_context
-        result["strategy"] = {}  # Shared strategy data
-        self.strat.execute(StrategyContextSchema().load(result))
+        self.log.debug(f"Putting data on the pipeline: {data}")
+        result = {
+            "api_contexts": self.api_contexts,
+            "api_context": api_context,
+            "strategy": dict(),  # Shared strategy data
+            "result": data.data,
+        }
+        self.strat.execute(StrategyContextSchema().load(result).data)
 
     def shutdown(self, signum, frame):  # pylint: disable=unused-argument
         """Shut it down"""

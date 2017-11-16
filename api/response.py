@@ -22,6 +22,8 @@ RESPONSE_MAP = {
     "ticker": X.TickSchema(),
     "ws_trade_ticker": X.WsTradeChannel(),
     "Favorite": X.FavoriteTickSchema(many=True),
+    "all": X.AllMarketDataSchema(),
+    "default": X.FavoriteTickSchema(),
 }
 
 
@@ -44,6 +46,13 @@ class ResponseSchema(Schema):
           ~~ Override this to match your API. ~~
         """
         return data.get("result", "")
+
+    def get_notifications(self, data):  # pylint: disable=no-self-use
+        """
+        Retrieve the notifications from the parsed object
+          ~~ Override this to match your API. ~~
+        """
+        return data.get("notifications", "")
 
     @post_load
     def populate_data(self, data):
@@ -74,9 +83,14 @@ class WSResponseSchema(ResponseSchema):
         if "errors" in data:
             return Result(errors=data["errors"])
         # pylint: disable=E1101
+        channel = self.context.get("channel")
+        try:
+            sch = RESPONSE_MAP[channel]
+        except KeyError:
+            sch = RESPONSE_MAP["default"]
+        sch.dump(self.get_result(data))
         result = {
-            "channel": self.context.get("channel"),
-            "result": RESPONSE_MAP[self.MessageType]  # type: ignore
-                      .dump(self.get_result(data))  # NOQA
+            "channel": channel,
+            "result": sch.dump(self.get_result(data))  # NOQA
         }
         return Result(**result)

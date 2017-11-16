@@ -52,7 +52,6 @@ class ApiMetaAdapter(LoggerMixin):
 
     def shutdown(self):
         """Executed on shutdown of application"""
-        print(f"SHUTDOWN: {len(self.apis)}")
         for wsock in self.wsocks:
             wsock.shutdown()
         for api in self.apis:
@@ -104,13 +103,9 @@ class WsAdapter(ApiProduct):
 
     def _generate_result(self, channel, result):
         """Generate the result object"""
-        try:
-            schema = self.api.ws_result_schema()
-            schema.context['channel'] = channel
-            self.callback(schema.dump(result).data, self.api.context)
-        except:  # NOQA
-            raise Exception(f"""Could not parse item on channel {channel}; data:
-                      {result}""")
+        schema = self.api.ws_result_schema()
+        schema.context['channel'] = channel
+        self.callback(schema.load(result), self.api.context)
 
 
 class ApiAdapter(ApiProduct):
@@ -195,10 +190,10 @@ class ApiAdapter(ApiProduct):
     def _generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
-        try:
-            schema = self.api.result_schema()
-            schema.context['callname'] = callname
-            self.callback(schema.dump(result).data, self.context)
-        except:  # NOQA
-            raise Exception(f"""Could not parse response for {callname}; data:
-            {result}""")
+        #try:
+        schema = self.api.result_schema()
+        schema.context['callname'] = callname
+        self.callback(schema.load(result), self.context)
+        #except:  # NOQA
+        #    raise Exception(f"""Could not parse response for {callname}; data:
+        #    {result}""")

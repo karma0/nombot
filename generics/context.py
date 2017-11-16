@@ -5,7 +5,6 @@ from multiprocessing import Lock
 from marshmallow import Schema, fields
 
 from generics.config import ApiServiceConfSchema
-from generics.exchange import ResultSchema
 
 
 class ApiContextSchema(Schema):
@@ -27,9 +26,10 @@ class ApiContextSchema(Schema):
 class StrategyContextSchema(Schema):
     """Context to share information among Strategies"""
     api_contexts = fields.Dict()
-    context = fields.Nested(ApiContextSchema())
-    result = fields.Nested(ResultSchema())
+    api_context = fields.Nested(ApiContextSchema())
 
     class Meta:
         """Strategy Context metaparameters"""
-        additional = ("strategy",)  # Where the meat of strategy data is stored
+        # Where the meat of strategy data is stored
+        additional = ("strategy", "result")
+        strict = True

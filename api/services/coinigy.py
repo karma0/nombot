@@ -4,7 +4,7 @@ from marshmallow import fields, pre_load
 
 from app.log import LoggerMixin
 from api.requestor import Req
-from api.response import ResponseSchema
+from api.response import WSResponseSchema, ResponseSchema
 from api.request import RequestSchema
 from api.websock import SockMixin
 
@@ -35,7 +35,7 @@ class CoinigyResponseSchema(ResponseSchema):
         additional = ("data",)
 
 
-class CoinigyWSResponseSchema(ResponseSchema):
+class CoinigyWSResponseSchema(WSResponseSchema):
     """Schema defining the message type from a websocket"""
     MessageType = fields.Str(required=True)
 
