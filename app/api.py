@@ -82,16 +82,24 @@ class ApiProduct:
 
 class WsAdapter(ApiProduct):
     """Adapter for WebSockets"""
+    is_connected_ws = False
+
     def run(self):
         """
         Called by internal API subsystem to initialize websockets connections
         in the API interface
         """
         self.api = self.context.get("cls")(self.context)
+        self.context["inst"].append(self)  # Adapters used by strategies
+
+        def on_ws_connect(*args, **kwargs):
+            """Callback on connect hook to set is_connected_ws"""
+            self.is_connected_ws = True
+            self.api.on_ws_connect(*args, **kwargs)
 
         # Initialize websocket in a thread with channels
         self.thread = Process(target=self.api.connect_ws, args=(
-            self.api.on_ws_connect, [
+            on_ws_connect, [
                 SockChannel(channel, res_type, self._generate_result)
                 for channel, res_type in
                 self
@@ -117,7 +125,7 @@ class ApiAdapter(ApiProduct):
     def run(self):
         """Executed on startup of application"""
         self.api = self.context.get("cls")(self.context)
-        self.context["inst"] = self  # This adapter can be used by strategies
+        self.context["inst"].append(self)  # Adapters used by strategies
 
         def loop():
             """Loop on scheduler, calling calls"""

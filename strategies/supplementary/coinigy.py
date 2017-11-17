@@ -2,17 +2,33 @@
 from api.websock import SockChannel
 
 from app.strategy import IStrategy
+
 from common.factory import Creator, Product
+from common.dotobj import DotObj
 
 
 class CoinigyFacade:
-    """Encapsulates some API functionality"""
+    """Encapsulates some API functionality, initialized on result"""
+    ws_prepped = False
+
     def __init__(self, api_context):
         self.context = api_context
         self.conf = api_context.get("conf")
         self.api = api_context.get("inst")
 
-    def connect_all_channels(self):
+        # Find the websocket and connect_all_channels on it
+        if not self.ws_prepped:
+            for inst in self.context.get("inst"):
+                try:
+                    if inst.is_connected_ws:
+                        self.ws_prepped = True
+                        self._connect_all_channels(inst)
+                        break
+                except AttributeError:
+                    pass
+
+    # FIXME
+    def _connect_all_channels(self, inst):
         """
         Dynamically generate the websocket channels based on exchange and
         currency configurations and what the server reports available.
@@ -76,7 +92,7 @@ class CoinigyParser(Product):
 
     def _default_parser(self):
         """Return a result object for supplementation"""
-        return self.strategy_data["coinigy"].update(
+        return self.strategy_data.coinigy.update(
             {self.result.callname: self.result})
 
     def interface(self):
@@ -87,28 +103,28 @@ class CoinigyParser(Product):
             self._lookup(self.result.channel)()
 
 
+class CoinigyStrategyData(DotObj):
+    """Object to hold all strategy data"""
+    coinigy = {}  # type: dict
+
+
 class CoinigyStrategy(IStrategy):
     """Strategy to supplement/act upon Coinigy API events"""
-    ws_prepped = False
-    _strategy_data = {
-        "coinigy": {}
-    }
+    name = "coinigy_strategy"
+
+    def __init__(self):
+        self._strategy_data = CoinigyStrategyData()
+        self.create_logger()
+        self.api_facade = None  # initialized on result
 
     def bind(self, context):
-        """Bind actions to the strategy context"""
+        """Bind actions to the strategy context for a given result"""
+        self.api_facade = CoinigyFacade(context.get("api_context"))
+
         parser = CoinigyResultParserFactory(self._strategy_data, context)
         parser.product.interface()
 
-        # Find the websocket and connect_all_channels on it
-        if self.ws_prepped:
-            api_facade = CoinigyFacade(context.get("api_context"))
-            for ctx in context.get("api_contexts").get("coinigy"):
-                if ctx.inst.is_connected_ws:
-                    api_facade.connect_all_channels()
-                    self.ws_prepped = True
-                    break
-
-        # Supplement
+        # initialze supplemented data
         context["strategy"] = self._strategy_data
 
         return context

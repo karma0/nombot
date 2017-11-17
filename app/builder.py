@@ -39,6 +39,7 @@ class AppBuilder(LoggerMixin):
         return sch.load({
             "name": cls.name,
             "cls": cls,
+            "inst": [],
             "conf": self.conf.get_api(cls.name),
             "calls": self.conf.get_api_calls(),
             "currencies": self.conf.get_currencies(),
