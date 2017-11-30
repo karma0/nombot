@@ -124,6 +124,7 @@ class WsAdapter(ApiProduct):
         """Generate the result object"""
         schema = self.api.ws_result_schema()
         schema.context['channel'] = channel
+        print(f"""CHANNEL!{channel}""")
         print(f"""SCHEMA!{schema}""")
         print(f"""RESULT!{result}""")
         self.callback(schema.load(result), self.api.context)

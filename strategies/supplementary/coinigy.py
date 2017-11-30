@@ -47,7 +47,7 @@ class CoinigyFacade(LoggerMixin):
         channels = {chan: True for chan in
                     self.conf.get("subscriptions").keys()}
 
-        # Assemble a list of
+        # Assemble a list of possibilities based on the config exch/currency
         exch_currencies = []
         for exch in self.conf["exchanges"]:
             for curr1 in self.context["currencies"]:
