@@ -82,7 +82,7 @@ class ApiProduct:
 
 class WsAdapter(ApiProduct):
     """Adapter for WebSockets"""
-    is_connected_ws = False
+    is_connected_ws = None
 
     def run(self):
         """
@@ -109,10 +109,23 @@ class WsAdapter(ApiProduct):
             ]))
         self.thread.start()
 
+    def wscall(self, *args, **kwargs):
+        """Passthrough method"""
+        self.api.wscall(*args, **kwargs)
+
+    def add_channels(self, channels):
+        """
+        Take a list of SockChannel objects and extend the websock listener
+        """
+        self.api.channels.extend(channels)
+        self.api.connect_channels(channels)
+
     def _generate_result(self, channel, result):
         """Generate the result object"""
         schema = self.api.ws_result_schema()
         schema.context['channel'] = channel
+        print(f"""SCHEMA!{schema}""")
+        print(f"""RESULT!{result}""")
         self.callback(schema.load(result), self.api.context)
 
 
@@ -120,6 +133,7 @@ class ApiAdapter(ApiProduct):
     """Adapter for any API implementations"""
     scheduler = sched.scheduler(time.time, time.sleep)
     keep_going = True
+    is_connected_ws = False
     cls = None
 
     def run(self):
@@ -187,21 +201,13 @@ class ApiAdapter(ApiProduct):
     def _generate_request(self, callname, request):
         """Generate a request object for delivery to the API"""
         # Retrieve path from API class
-        try:
-            schema = self.api.request_schema()
-            schema.context['callname'] = callname
-            return schema.dump(request).data.get("payload")
-        except:  # NOQA
-            raise Exception(f"""Could not parse request for {callname}; data:
-            {request}""")
+        schema = self.api.request_schema()
+        schema.context['callname'] = callname
+        return schema.dump(request).data.get("payload")
 
     def _generate_result(self, callname, result):
         """Generate a results object for delivery to the context object"""
         # Retrieve path from API class
-        #try:
         schema = self.api.result_schema()
         schema.context['callname'] = callname
         self.callback(schema.load(result), self.context)
-        #except:  # NOQA
-        #    raise Exception(f"""Could not parse response for {callname}; data:
-        #    {result}""")
