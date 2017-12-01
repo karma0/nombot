@@ -53,7 +53,7 @@ class SockMixin:
         def ack(eventname, error, data):  # pylint: disable=unused-argument
             """Ack"""
             if error:
-                self.log.error(error)
+                self.log.error(f"""OnAuth: {error}""")
             else:
                 self.connect_channels(self.channels)
                 self.post_conn_cb()

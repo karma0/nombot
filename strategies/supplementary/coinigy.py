@@ -10,6 +10,7 @@ from common.dotobj import DotObj
 
 class CoinigyFacade(LoggerMixin):
     """Encapsulates some API functionality, initialized on result"""
+    name = "coinigy_facade"
     possible_channels = []  # type: list
 
     def __init__(self, api_context):
@@ -18,26 +19,28 @@ class CoinigyFacade(LoggerMixin):
         self.wsapi = None
         self.api = None
 
-        # Find the websocket and _connect_all_channels on it
+        self.create_logger()
+
+        # Find the websocket and _connect_channels on it
         if self.wsapi is None or self.api is None:
             for inst in self.context.get("inst"):
                 if inst.is_connected_ws:
                     self.wsapi = inst
                     # If we don't have a channel list, let's get one
                     if not self.possible_channels:
-                        inst.wscall("channels", None,
-                                    self._connect_all_channels)
+                        inst.wscall("channels", "OK",
+                                    self._connect_channels)
 
                 elif inst.is_connected_ws is not None:
                     self.api = inst
 
-    def _connect_all_channels(self, eventname, error, data):
+    def _connect_channels(self, ename, error, data):   # pylint: disable=W0613
         """
         Dynamically generate the websocket channels based on exchange and
         currency configurations and what the server reports available.
         """
-        if error or eventname != "channels":
-            self.log.error(error)
+        if error:
+            self.log.error(f"Channel request error: {error}")
             return
 
         # We've reached this point if we have a list of channels
@@ -48,14 +51,14 @@ class CoinigyFacade(LoggerMixin):
                     self.conf.get("subscriptions").keys()}
 
         # Assemble a list of possibilities based on the config exch/currency
-        exch_currencies = []
+        ecc = []
         for exch in self.conf["exchanges"]:
             for curr1 in self.context["currencies"]:
                 for curr2 in self.context["currencies"]:
                     if curr1 != curr2:
-                        exch_currencies.append((exch, curr1, curr2))
+                        ecc.append((exch, curr1, curr2))
 
-        for exch, curr1, curr2 in exch_currencies:
+        for exch, curr1, curr2 in ecc:
             for ortra in ["order", "trade"]:
                 for chan in [
                         f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
@@ -95,7 +98,7 @@ class CoinigyParser(Product):
     def __init__(self, strategy_data, context):
         self.strategy_data = strategy_data
         self.context = context
-        self.result = self.context.get("result")
+        self.result = self.context.get("result").data
         self.api_ctx = self.context.get("conf")
         self.api_ctxs = self.context.get("api_contexts")
 
@@ -121,6 +124,9 @@ class CoinigyStrategyData(DotObj):
     coinigy = {
         "apiname": "coinigy"
     }
+
+    def __str__(self):
+        return self.coinigy.__str__()
 
 
 class CoinigyStrategy(IStrategy):

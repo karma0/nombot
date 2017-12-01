@@ -59,7 +59,7 @@ class AppBuilder(LoggerMixin):
             "api_contexts": self.api_contexts,
             "api_context": api_context,
             "strategy": dict(),  # Shared strategy data
-            "result": data.data,
+            "result": data,
         }
         self.strat.execute(StrategyContextSchema().load(result).data)
 

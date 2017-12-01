@@ -37,8 +37,6 @@ class CoinigyResponseSchema(ResponseSchema):
 
 class CoinigyWSResponseSchema(WSResponseSchema):
     """Schema defining the message type from a websocket"""
-    MessageType = fields.Str(required=True)
-
     def get_result(self, data):
         """Return the actual result data"""
         return data.get("data", {}).get("Data", "")

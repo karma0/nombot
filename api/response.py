@@ -47,13 +47,6 @@ class ResponseSchema(Schema):
         """
         return data.get("result", "")
 
-    def get_notifications(self, data):  # pylint: disable=no-self-use
-        """
-        Retrieve the notifications from the parsed object
-          ~~ Override this to match your API. ~~
-        """
-        return data.get("notifications", "")
-
     @post_load
     def populate_data(self, data):
         """Parse the incoming schema"""

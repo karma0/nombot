@@ -127,7 +127,7 @@ class WsAdapter(ApiProduct):
         print(f"""CHANNEL!{channel}""")
         print(f"""SCHEMA!{schema}""")
         print(f"""RESULT!{result}""")
-        self.callback(schema.load(result), self.api.context)
+        self.callback(schema.load(result), self.context)
 
 
 class ApiAdapter(ApiProduct):
@@ -169,7 +169,7 @@ class ApiAdapter(ApiProduct):
             except AttributeError:
                 action = callname
         if action is not None:
-            self.api.log.info(
+            self.api.log.debug(
                 f"Using API's override for /{callname}: /{action}")
 
         # Define a mock method if one doesn't exist
@@ -180,9 +180,8 @@ class ApiAdapter(ApiProduct):
                 if action is None:
                     return self._generate_result(
                         callname, self.api.call(callname, args))
-                else:
-                    return self._generate_result(
-                        callname, self.api.call(action, args))
+                return self._generate_result(
+                    callname, self.api.call(action, args))
             request = self._generate_request(callname, args)
             return self._generate_result(callname, action(request))
 

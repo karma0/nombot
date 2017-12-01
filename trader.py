@@ -4,13 +4,18 @@
 Trading bot
 """
 
+try:
+    import coloredlogs
+    coloredlogs.install()
+except ImportError:
+    print("Use Python coloredlogs module for colored output")
+
 from api.services.coinigy import Coinigy
 from app.builder import AppBuilder
 
 from app.strategy import Strategy
 from strategies.supplementary.coinigy import CoinigyStrategy
 from strategies.print import Print
-from strategies.echo import Echo
 
 
 def main(strategies=None, apiclasses=None):
@@ -19,7 +24,6 @@ def main(strategies=None, apiclasses=None):
         strategies = [
             CoinigyStrategy(),
             Print(),
-            Echo()
         ]
     if apiclasses is None:
         apiclasses = [Coinigy]
