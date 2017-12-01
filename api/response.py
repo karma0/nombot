@@ -4,6 +4,7 @@ Generic API Interface, mixin, and response maps/types
 
 from marshmallow import fields, Schema, post_load
 
+from common.dotobj import DotObj
 from generics import exchange as X
 
 
@@ -20,20 +21,21 @@ RESPONSE_MAP = {
     "markets": X.MarketSchema(many=True),
     "data": X.AllMarketDataSchema(),
     "ticker": X.TickSchema(),
-    "ws_trade_ticker": X.WsTradeChannel(),
+    "trade": X.WsTradeChannel(),
     "Favorite": X.FavoriteTickSchema(many=True),
     "all": X.AllMarketDataSchema(),
     "default": X.FavoriteTickSchema(),
 }
 
 
-class Result:
+class Result(DotObj):
     """A bare result object"""
     def __init__(self, **kwargs):
         self.channel = kwargs.get('channel', None)
         self.callname = kwargs.get('callname', None)
         self.result = kwargs.get('result', None)
         self.errors = kwargs.get('errors', None)
+        super().__init__(**kwargs)
 
 
 class ResponseSchema(Schema):
@@ -75,6 +77,8 @@ class WSResponseSchema(ResponseSchema):
         """Parse the incoming schema"""
         if "errors" in data:
             return Result(errors=data["errors"])
+
+        print(f"""\n\nRESP DATA!{data}""")
         # pylint: disable=E1101
         channel = self.context.get("channel")
         try:

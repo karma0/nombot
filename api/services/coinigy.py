@@ -37,14 +37,29 @@ class CoinigyResponseSchema(ResponseSchema):
 
 class CoinigyWSResponseSchema(WSResponseSchema):
     """Schema defining the message type from a websocket"""
+    MessageType = fields.Str()
+
+    @pre_load
+    def combine_errors(self, in_data):  # pylint: disable=no-self-use
+        """Convert the error to the expected output"""
+        print(f"""PRELOAD DATA!{in_data}\n\n""")
+        if "err_num" in in_data:
+            in_data["errors"] = dict()
+            in_data["errors"][in_data["err_num"]] = in_data["err_msg"]
+
     def get_result(self, data):
         """Return the actual result data"""
-        return data.get("data", {}).get("Data", "")
+        print(f"""DATA!{data}\n\n""")
+        try:
+            retdata = data.get("data", {})["Data"]
+        except KeyError:
+            retdata = data.get("data", {}).get("data", "")
+        return retdata
 
     class Meta:
         """Add 'data' field"""
         strict = True
-        additional = ("Data",)
+        additional = ("Data","data")
 
 
 class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902

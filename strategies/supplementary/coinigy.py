@@ -1,6 +1,4 @@
 """Coinigy strategy, subscribes to all favorited channels"""
-from api.websock import SockChannel
-
 from app.strategy import IStrategy
 from app.log import LoggerMixin
 
@@ -11,28 +9,19 @@ from common.dotobj import DotObj
 class CoinigyFacade(LoggerMixin):
     """Encapsulates some API functionality, initialized on result"""
     name = "coinigy_facade"
-    possible_channels = []  # type: list
+    chan_callback = None
 
-    def __init__(self, api_context):
+    def __init__(self, inst, api_context):
         self.context = api_context
         self.conf = api_context.get("conf")
-        self.wsapi = None
-        self.api = None
+        self.api = inst
 
         self.create_logger()
 
-        # Find the websocket and _connect_channels on it
-        if self.wsapi is None or self.api is None:
-            for inst in self.context.get("inst"):
-                if inst.is_connected_ws:
-                    self.wsapi = inst
-                    # If we don't have a channel list, let's get one
-                    if not self.possible_channels:
-                        inst.wscall("channels", "OK",
-                                    self._connect_channels)
-
-                elif inst.is_connected_ws is not None:
-                    self.api = inst
+    def get_channels(self, callback):
+        """Setup possible channels"""
+        self.chan_callback = callback
+        self.api.wscall("channels", None, self._connect_channels)
 
     def _connect_channels(self, ename, error, data):   # pylint: disable=W0613
         """
@@ -44,7 +33,7 @@ class CoinigyFacade(LoggerMixin):
             return
 
         # We've reached this point if we have a list of channels
-        self.possible_channels = [item["channel"] for item in data[0]]
+        possible_channels = [item["channel"] for item in data[0]]
 
         # Assemble a list of configured channels
         channels = {chan: True for chan in
@@ -64,25 +53,27 @@ class CoinigyFacade(LoggerMixin):
                         f"{ortra}-{exch}--{curr1}--{curr2}".upper(),
                         f"{ortra}-{exch}--{curr2}--{curr1}".upper()
                 ]:
-                    if chan in self.possible_channels:
+                    if chan in possible_channels:
                         if chan not in channels:
                             channels[chan] = False
 
         self.context["shared"]["channels"] = channels
 
         # Subscribe to channels that haven't been subscribed to yet
-        sockchannels = []
+        chan_resp = {}
         for chan in [k for k, v in channels.items() if not v]:
+            restype = None
             if chan.startswith("ORDER"):
-                restype = "order"
+                restype = "orders"
             elif chan.startswith("TRADE"):
-                restype = "tradeMessage"
-            sockchannels.append(
-                SockChannel(chan, restype, self.context["callback"]))
-            self.log.info(f"""CONNECTING CHANNEL!{chan}""")
+                restype = "trade"
+            if restype is not None:
+                chan_resp[chan] = restype
+                self.log.info(f"""CONNECTING CHANNEL!{chan}""")
 
         # Connect to channels
-        self.wsapi.add_channels(sockchannels)
+        self.api.add_channels(chan_resp)
+        self.chan_callback(possible_channels)
 
 
 class CoinigyResultParserFactory(Creator):
@@ -132,15 +123,33 @@ class CoinigyStrategyData(DotObj):
 class CoinigyStrategy(IStrategy):
     """Strategy to supplement/act upon Coinigy API events"""
     name = "coinigy_strategy"
+    possible_channels = {}  # type: dict
+    api_facade = None
+    ws_facade = None
 
     def __init__(self):
         self._strategy_data = CoinigyStrategyData()
         self.create_logger()
-        self.api_facade = None  # initialized on result
 
     def bind(self, context):
         """Bind actions to the strategy context for a given result"""
-        self.api_facade = CoinigyFacade(context.get("api_context"))
+        if self.ws_facade is None or self.api_facade is None:
+            api_context = context.get("api_context")
+            for inst in api_context.get("inst"):
+                if inst.is_connected_ws:
+
+                    self.ws_facade = CoinigyFacade(inst, api_context)
+                    if not self.possible_channels:
+
+                        def pop_chans(chans):
+                            """Populate the channels on success"""
+                            self.possible_channels = chans
+
+                        self.ws_facade.get_channels(pop_chans)
+
+                elif inst.is_connected_ws is not None:
+                    self.api_facade = \
+                        CoinigyFacade(inst, api_context)
 
         parser = CoinigyResultParserFactory(self._strategy_data, context)
         parser.product.interface()
@@ -150,6 +159,7 @@ class CoinigyStrategy(IStrategy):
             "coinigy": {
                 "data": parser.product,
                 "api": self.api_facade,
+                "ws": self.ws_facade,
                 }
             })
 

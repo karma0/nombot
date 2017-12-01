@@ -34,11 +34,11 @@ class ApiMetaAdapter(LoggerMixin):
         self.create_logger()
 
         for name, context in contexts.items():
+            self.log.debug(f"Starting API: {name}")
             wsock = WsAdapterFactory()
             wsock.product.interface(context)
             self.wsocks.append(wsock.product)
 
-            self.log.debug(f"Starting API: {name}")
             api = ApiAdapterFactory()
             api.product.interface(context)
             self.apis.append(api.product)
@@ -58,8 +58,9 @@ class ApiMetaAdapter(LoggerMixin):
             api.shutdown()
 
 
-class ApiProduct:
+class ApiProduct(LoggerMixin):
     """ApiAdapterFactory Product interface"""
+    name = "api_product"
     thread = None
     keep_going = True
 
@@ -67,6 +68,7 @@ class ApiProduct:
         self.api = None
         self.context = None
         self.callback = None
+        self.create_logger()
 
     def interface(self, context):
         """Implement the interface for the adapter object"""
@@ -105,7 +107,8 @@ class WsAdapter(ApiProduct):
                 self
                 .context
                 .get("conf")
-                .get("subscriptions").items()
+                .get("subscriptions")
+                .items()
             ]))
         self.thread.start()
 
@@ -117,16 +120,18 @@ class WsAdapter(ApiProduct):
         """
         Take a list of SockChannel objects and extend the websock listener
         """
-        self.api.channels.extend(channels)
-        self.api.connect_channels(channels)
+        chans = [
+            SockChannel(chan, res, self._generate_result)
+            for chan, res in channels.items()
+        ]
+        self.api.channels.extend(chans)
+        self.api.connect_channels(chans)
 
     def _generate_result(self, channel, result):
         """Generate the result object"""
         schema = self.api.ws_result_schema()
         schema.context['channel'] = channel
-        print(f"""CHANNEL!{channel}""")
-        print(f"""SCHEMA!{schema}""")
-        print(f"""RESULT!{result}""")
+        self.log.warning(f"""WS!!GENERATE_RESULT!{schema}!{result}""")
         self.callback(schema.load(result), self.context)
 
 
@@ -135,7 +140,6 @@ class ApiAdapter(ApiProduct):
     scheduler = sched.scheduler(time.time, time.sleep)
     keep_going = True
     is_connected_ws = False
-    cls = None
 
     def run(self):
         """Executed on startup of application"""
