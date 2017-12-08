@@ -37,4 +37,4 @@ class BasicFactory(Creator):
         super().__init__(self, *args, **kwargs)
 
     def _factory_method(self, *args, **kwargs):
-        return self.adapter(*args, **kwargs)
+        return self.adapter()

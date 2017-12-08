@@ -4,7 +4,9 @@ API Core
 
 from app.log import LoggerMixin
 from common.factory import BasicFactory
-from api.adapter import ApiAdapter, WsAdapter
+
+from api.adapter.api import ApiAdapter
+from api.adapter.ws import WsAdapter
 
 
 class ApiMetaAdapter(LoggerMixin):
