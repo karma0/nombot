@@ -4,10 +4,10 @@ from marshmallow import fields, pre_load
 
 from app.log import LoggerMixin
 from api.requestor import Req
-from api.response import WSResponseSchema, ResponseSchema
 from api.request import RequestSchema
 from api.websock import SockMixin
 
+from generics.response import WSResponseSchema, ResponseSchema
 from generics.exchange import NotificationSchema
 
 
