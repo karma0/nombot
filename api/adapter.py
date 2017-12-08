@@ -6,80 +6,8 @@ from multiprocessing import Process
 import sched
 import time
 
-from app.log import LoggerMixin
-from common.factory import Creator
-from api.websock import SockChannel  # pylint: disable=E0611,E0401
-
-
-class WsAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
-    """Generator of WsAdapters"""
-    def _factory_method(self, *args, **kwargs):
-        return WsAdapter()
-
-
-class ApiAdapterFactory(Creator):  # pylint: disable=too-few-public-methods
-    """Generator of ApiAdapters"""
-    def _factory_method(self, *args, **kwargs):
-        return ApiAdapter()
-
-
-class ApiMetaAdapter(LoggerMixin):
-    """Adapter of adapters for all API instantiations"""
-    name = "api"
-
-    def __init__(self, contexts):
-        self.apis = []  # type: list
-        self.wsocks = []  # type: list
-
-        self.create_logger()
-
-        for name, context in contexts.items():
-            self.log.debug(f"Starting API: {name}")
-            wsock = WsAdapterFactory()
-            wsock.product.interface(context)
-            self.wsocks.append(wsock.product)
-
-            api = ApiAdapterFactory()
-            api.product.interface(context)
-            self.apis.append(api.product)
-
-    def run(self):
-        """Executed on startup of application"""
-        for wsock in self.wsocks:
-            wsock.run()
-        for api in self.apis:
-            api.run()
-
-    def shutdown(self):
-        """Executed on shutdown of application"""
-        for wsock in self.wsocks:
-            wsock.shutdown()
-        for api in self.apis:
-            api.shutdown()
-
-
-class ApiProduct(LoggerMixin):
-    """ApiAdapterFactory Product interface"""
-    name = "api_product"
-    thread = None
-    keep_going = True
-
-    def __init__(self):
-        self.api = None
-        self.context = None
-        self.callback = None
-        self.create_logger()
-
-    def interface(self, context):
-        """Implement the interface for the adapter object"""
-        self.context = context
-        self.callback = self.context.get("callback")
-
-    def shutdown(self):
-        """Executed on shutdown of application"""
-        self.keep_going = False
-        if hasattr(self.api, "shutdown"):
-            self.api.shutdown()
+from api.product import ApiProduct
+from api.websock import SockChannel
 
 
 class WsAdapter(ApiProduct):

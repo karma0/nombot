@@ -28,3 +28,13 @@ class Product(metaclass=abc.ABCMeta):  # pylint: disable=too-few-public-methods
     def interface(self):
         """Implement the interface for the object"""
         pass
+
+
+class BasicFactory(Creator):
+    """Generator of adapters"""
+    def __init__(self, adapter, *args, **kwargs):
+        self.adapter = adapter
+        super().__init__(self, *args, **kwargs)
+
+    def _factory_method(self, *args, **kwargs):
+        return self.adapter(*args, **kwargs)
