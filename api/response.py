@@ -24,7 +24,6 @@ RESPONSE_MAP = {
     "trade": X.WsTradeChannel(),
     "Favorite": X.FavoriteTickSchema(many=True),
     "all": X.AllMarketDataSchema(),
-    "default": X.FavoriteTickSchema(),
 }
 
 
@@ -36,6 +35,23 @@ class Result(DotObj):
         self.result = kwargs.get('result', None)
         self.errors = kwargs.get('errors', None)
         super().__init__(**kwargs)
+
+
+class DefaultSchema(Schema):
+    """Default schema parser"""
+    MessageType = fields.Str(required=True)
+
+    @post_load
+    def generate_obj(self, data):  # pylint: disable=no-self-use
+        """Generate new schema based on message type"""
+        return RESPONSE_MAP[data["MessageType"]].dump(data["Data"])
+
+    class Meta:
+        """Data field is dyanamic type"""
+        additional = ("Data",)
+
+
+RESPONSE_MAP["default"] = DefaultSchema()
 
 
 class ResponseSchema(Schema):
@@ -52,6 +68,7 @@ class ResponseSchema(Schema):
     @post_load
     def populate_data(self, data):
         """Parse the incoming schema"""
+        print(f"""\n\nAPI RESP DATA!{self.context["callname"]}!{data}""")
         if "errors" in data:
             return Result(errors=data["errors"])
         callname = self.context.get("callname")
@@ -78,9 +95,9 @@ class WSResponseSchema(ResponseSchema):
         if "errors" in data:
             return Result(errors=data["errors"])
 
-        print(f"""\n\nRESP DATA!{data}""")
         # pylint: disable=E1101
         channel = self.context.get("channel")
+        print(f"""\n\nRESP DATA!{channel}!{data}""")
         try:
             sch = RESPONSE_MAP[channel]
         except KeyError:

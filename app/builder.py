@@ -55,7 +55,6 @@ class AppBuilder(LoggerMixin):
     def receive(self, data, api_context):
         """Pass an API result down the pipeline"""
         self.log.debug(f"Putting data on the pipeline: {data}")
-        print(f"""BUILDER DATA!{data}""")
         result = {
             "api_contexts": self.api_contexts,
             "api_context": api_context,

@@ -15,7 +15,7 @@ from app.builder import AppBuilder
 
 from app.strategy import Strategy
 from strategies.supplementary.coinigy import CoinigyStrategy
-from strategies.print import Print
+from strategies.print import PrintResult
 
 
 def main(strategies=None, apiclasses=None):
@@ -23,7 +23,7 @@ def main(strategies=None, apiclasses=None):
     if strategies is None:
         strategies = [
             CoinigyStrategy(),
-            Print(),
+            PrintResult(),
         ]
     if apiclasses is None:
         apiclasses = [Coinigy]

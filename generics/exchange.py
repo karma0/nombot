@@ -62,6 +62,7 @@ class AccountSchema(ResultSchema):
     auth_updated = f.Str()
 
 
+
 class RefreshBalanceSchema(GenericSchema):
     """Used to refresh a balance on an account"""
     auth_id = f.Str(required=True)
