@@ -23,8 +23,8 @@ class DefaultSchema(Schema):
 RESPONSE_MAP["default"] = DefaultSchema()
 
 
-class ResponseSchema(Schema):
-    """Schema defining the data structure the API will respond with"""
+class CommonResponseSchema(Schema):
+    """Common response schema"""
     errors = fields.Dict()
 
     def get_result(self, data):  # pylint: disable=no-self-use
@@ -34,6 +34,9 @@ class ResponseSchema(Schema):
         """
         return data.get("result", "")
 
+
+class ResponseSchema(CommonResponseSchema):
+    """Schema defining the data structure the API will respond with"""
     @post_load
     def populate_data(self, data):
         """Parse the incoming schema"""
@@ -54,7 +57,7 @@ class ResponseSchema(Schema):
         additional = ("result",)
 
 
-class WSResponseSchema(ResponseSchema):
+class WSResponseSchema(CommonResponseSchema):
     """
     Schema defining the data structure from published messages on the websock
     """
