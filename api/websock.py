@@ -41,6 +41,13 @@ class SockMixin:
         else:
             self.sock.emitack(method, query, callback)
 
+    def connect_channels(self, channels):
+        """Connect the provided channels"""
+        self.log.info(f"Connecting to channels...")
+        for chan in channels:
+            chan.connect(self.sock)
+            self.log.info(f"\t{chan.channel}")
+
     # Internal initialization callbacks...
 
     def _on_set_auth(self, sock, token):
@@ -59,13 +66,6 @@ class SockMixin:
                 self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
-
-    def connect_channels(self, channels):
-        """Connect the provided channels"""
-        self.log.info(f"Connecting to channels...")
-        for chan in channels:
-            chan.connect(self.sock)
-            self.log.info(f"\t{chan.channel}")
 
     def _on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
