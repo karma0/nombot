@@ -55,9 +55,12 @@ class WsAdapter(ApiProduct):
         self.api.channels.extend(chans)
         self.api.connect_channels(chans)
 
-    def _generate_result(self, channel, result):
+    def _generate_result(self, res_type, channel, result):
         """Generate the result object"""
         schema = self.api.ws_result_schema()
         schema.context['channel'] = channel
-        self.log.warning(f"""WS!!GENERATE_RESULT!{schema.load(result)}""")
+        schema.context['response_type'] = res_type
+        self.log.warning(f"""WS!!GENERATE_RESULT1!{res_type}""")
+        self.log.warning(f"""WS!!GENERATE_RESULT2!{result}""")
+        self.log.warning(f"""WS!!GENERATE_RESULT3!{schema.load(result)}""")
         self.callback(schema.load(result), self.context)

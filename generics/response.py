@@ -69,9 +69,10 @@ class WSResponseSchema(CommonResponseSchema):
 
         # pylint: disable=E1101
         channel = self.context.get("channel")
-        print(f"""\n\nRESP DATA!{channel}!{data}""")
+        res_type = self.context.get("response_type")
+        print(f"""\n\nRESP DATA!{res_type}!{channel}!{data}""")
         try:
-            sch = RESPONSE_MAP[channel]
+            sch = RESPONSE_MAP[res_type]
         except KeyError:
             sch = RESPONSE_MAP["default"]
         sch.dump(self.get_result(data))

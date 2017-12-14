@@ -9,7 +9,7 @@ from generics import exchange as X
 RESPONSE_MAP = {
     "accounts": X.AccountSchema(many=True),
     "balances": X.BalanceSchema(many=True),
-    "orders": X.AllOrdersSchema(),
+    "orders": X.OrdersSchema(many=True),
     "alerts": X.AllAlertsSchema(),
     "newsFeed": X.NewsItemSchema(many=True),
     "orderTypes": X.OrderTypesCallSchema(),
