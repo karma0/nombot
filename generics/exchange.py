@@ -329,3 +329,13 @@ class WsTradeChannel(ResultSchema):
     time = f.Str(required=True)
     timestamp = f.Str(required=True)
     time_local = f.Str(required=True)
+
+class WsOrderChannel(ResultSchema):
+    """An item from a websocket order channel"""
+    exchange = f.Str(required=True)
+    label = f.Str(required=True)
+    ordertype = f.Str(required=True)
+    price = f.Float(required=True)
+    quantity = f.Float(required=True)
+    total = f.Float(required=True)
+    timestamp = f.Str(required=True)

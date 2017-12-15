@@ -39,13 +39,7 @@ class CoinigyWSResponseSchema(WSResponseSchema):
     """Schema defining the message type from a websocket"""
     def get_result(self, data):
         """Return the actual result data"""
-        print(f"""DATA!{data}\n\n""")
         return data
-
-    class Meta:
-        """Add 'data' field"""
-        strict = True
-        additional = ("data",)
 
 
 class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902

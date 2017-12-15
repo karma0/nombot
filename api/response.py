@@ -9,7 +9,6 @@ from generics import exchange as X
 RESPONSE_MAP = {
     "accounts": X.AccountSchema(many=True),
     "balances": X.BalanceSchema(many=True),
-    "orders": X.OrdersSchema(many=True),
     "alerts": X.AllAlertsSchema(),
     "newsFeed": X.NewsItemSchema(many=True),
     "orderTypes": X.OrderTypesCallSchema(),
@@ -20,6 +19,7 @@ RESPONSE_MAP = {
     "data": X.AllMarketDataSchema(),
     "ticker": X.TickSchema(),
     "trade": X.WsTradeChannel(),
+    "orders": X.WsOrderChannel(many=True),
     "Favorite": X.FavoriteTickSchema(many=True),
     "all": X.AllMarketDataSchema(),
 }
