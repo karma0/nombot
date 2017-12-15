@@ -82,16 +82,20 @@ class CoinigyResultParserFactory(Creator):
         return CoinigyParser(*args, **kwargs)
 
 
-class CoinigyParser(Product):
+class CoinigyParser(Product, LoggerMixin):
     """Result parsing class"""
+    name = "coinigy_parser"
     _call_lookup = {}  # type: dict
 
     def __init__(self, strategy_data, context):
+        self.create_logger()
         self.strategy_data = strategy_data
         self.context = context
         self.result = self.context.get("result").data
         self.api_ctx = self.context.get("conf")
         self.api_ctxs = self.context.get("api_contexts")
+        self.log.warning(f"""STRATEGY_DATA!{strategy_data}""")
+        self.log.warning(f"""CONTEXT!{context}""")
 
     def _lookup(self, callname):
         """Return a callable function based on the name"""
@@ -99,8 +103,15 @@ class CoinigyParser(Product):
 
     def _default_parser(self):
         """Return a result object for supplementation"""
-        return self.strategy_data.coinigy.update(
-            {self.result.callname: self.result})
+        update = {}
+        if self.result.callname is not None:
+            update[self.result.callname] = self.result
+        elif self.result.response_type is not None:
+            update[self.result.response_type] = self.result
+        elif self.result.channel is not None:
+            update[self.result.channel] = self.result
+
+        return self.strategy_data.coinigy.update({"data": update})
 
     def interface(self):
         """Call the update to the context based on the result received"""
@@ -113,7 +124,8 @@ class CoinigyParser(Product):
 class CoinigyStrategyData(DotObj):
     """Object to hold all strategy data"""
     coinigy = {
-        "apiname": "coinigy"
+        "apiname": "coinigy",
+        "data": {}
     }
 
     def __str__(self):
@@ -157,7 +169,7 @@ class CoinigyStrategy(IStrategy):
         # initialze supplemented data
         context["strategy"].update({
             "coinigy": {
-                "data": parser.product,
+                "data": parser.product.result,
                 "api": self.api_facade,
                 "ws": self.ws_facade,
                 }
