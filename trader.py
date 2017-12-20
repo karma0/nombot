@@ -14,8 +14,8 @@ from api.services.coinigy import Coinigy
 from app.builder import AppBuilder
 
 from app.strategy import Strategy
-from strategies.supplementary.coinigy import CoinigyStrategy
-from strategies.supplementary.trading import OHLCVStrategy
+from strategies.middleware.coinigy import CoinigyStrategy
+from strategies.middleware.trading import OHLCVStrategy
 from strategies.print import PrintResult
 
 
