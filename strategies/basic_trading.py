@@ -23,7 +23,8 @@ class StockSupplement(IStrategy):
 
     def supplement(self, context):
         """Supplement the context with stockstats"""
-        history.append(self.parse(context.get('result')))
+        self.history.append(self.parse(context.get('result')))
 
     def parse(self, result):
-        pass
+        """Parse the results to generate stock data as exchange->src->dest"""
+        return result
