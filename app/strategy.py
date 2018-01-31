@@ -6,6 +6,8 @@ clients that use it.
 
 import abc
 
+from app.log import LoggerMixin
+
 
 class Strategy:
     """
@@ -38,12 +40,13 @@ class Strategy:
             ware.postshutdown()
 
 
-class IStrategy(metaclass=abc.ABCMeta):
+class IStrategy(abc.ABC, LoggerMixin):
     """
-    Declare an interface common to all supported algorithms. Context
-    uses this interface to call the algorithm defined by a
-    ConcreteStrategy.
+    Declare an interface common to all supported strategies. Context
+    uses this interface to call the strategies.
     """
+    name = "override_this_istrategy_name"
+
     @abc.abstractmethod
     def bind(self, context):
         """Bind to the context"""

@@ -41,6 +41,13 @@ class SockMixin:
         else:
             self.sock.emitack(method, query, callback)
 
+    def connect_channels(self, channels):
+        """Connect the provided channels"""
+        self.log.info(f"Connecting to channels...")
+        for chan in channels:
+            chan.connect(self.sock)
+            self.log.info(f"\t{chan.channel}")
+
     # Internal initialization callbacks...
 
     def _on_set_auth(self, sock, token):
@@ -53,18 +60,12 @@ class SockMixin:
         def ack(eventname, error, data):  # pylint: disable=unused-argument
             """Ack"""
             if error:
-                self.log.error(error)
+                self.log.error(f"""OnAuth: {error}""")
             else:
-                self._connect_channels()
+                self.connect_channels(self.channels)
                 self.post_conn_cb()
 
         sock.emitack("auth", self.creds, ack)
-
-    def _connect_channels(self):
-        self.log.info(f"Connecting to channels...")
-        for chan in self.channels:
-            chan.connect(self.sock)
-            self.log.info(f"\t{chan.channel}")
 
     def _on_connect(self, sock):  # pylint: disable=unused-argument
         """Message received from websocket"""
@@ -98,7 +99,11 @@ class SockChannel(LoggerMixin):
 
     def connect(self, sock):
         """Attach a given socket to a channel"""
+        def cbwrap(*args, **kwargs):
+            """Callback wrapper; passes in response_type"""
+            self.callback(self.response_type, *args, **kwargs)
+
         self.sock = sock
         self.sock.subscribe(self.channel)
-        self.sock.onchannel(self.channel, self.callback)
+        self.sock.onchannel(self.channel, cbwrap)
         self.log.debug(f"Listening on channel: {self.channel}")

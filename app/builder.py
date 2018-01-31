@@ -2,7 +2,7 @@
 Build the context and pipeline; manage the API
 """
 from app.log import LoggerMixin
-from app.api import ApiMetaAdapter
+from app.api_factory import ApiMetaAdapter
 from app.config import AppConf
 from generics.context import ApiContextSchema, StrategyContextSchema
 
@@ -39,6 +39,7 @@ class AppBuilder(LoggerMixin):
         return sch.load({
             "name": cls.name,
             "cls": cls,
+            "inst": [],
             "conf": self.conf.get_api(cls.name),
             "calls": self.conf.get_api_calls(),
             "currencies": self.conf.get_currencies(),
@@ -51,12 +52,16 @@ class AppBuilder(LoggerMixin):
         # call run with receive callback function
         self.api.run()
 
-    def receive(self, result, api_context):
+    def receive(self, data, api_context):
         """Pass an API result down the pipeline"""
-        self.log.debug(f"Putting data on the pipeline: {result}")
-        result["api_contexts"] = self.api_contexts
-        result["api_context"] = api_context
-        self.strat.execute(StrategyContextSchema().load(result))
+        self.log.debug(f"Putting data on the pipeline: {data}")
+        result = {
+            "api_contexts": self.api_contexts,
+            "api_context": api_context,
+            "strategy": dict(),  # Shared strategy data
+            "result": data,
+        }
+        self.strat.execute(StrategyContextSchema().load(result).data)
 
     def shutdown(self, signum, frame):  # pylint: disable=unused-argument
         """Shut it down"""

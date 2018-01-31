@@ -4,10 +4,10 @@ from marshmallow import fields, pre_load
 
 from app.log import LoggerMixin
 from api.requestor import Req
-from api.response import ResponseSchema
-from api.request import RequestSchema
 from api.websock import SockMixin
 
+from generics.request import RequestSchema
+from generics.response import WSResponseSchema, ResponseSchema
 from generics.exchange import NotificationSchema
 
 
@@ -35,18 +35,11 @@ class CoinigyResponseSchema(ResponseSchema):
         additional = ("data",)
 
 
-class CoinigyWSResponseSchema(ResponseSchema):
+class CoinigyWSResponseSchema(WSResponseSchema):
     """Schema defining the message type from a websocket"""
-    MessageType = fields.Str(required=True)
-
     def get_result(self, data):
         """Return the actual result data"""
-        return data.get("data", {}).get("Data", "")
-
-    class Meta:
-        """Add 'data' field"""
-        strict = True
-        additional = ("Data",)
+        return data
 
 
 class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902

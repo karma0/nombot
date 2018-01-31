@@ -17,12 +17,12 @@
         },
 
         "subscriptions": {
-          "xxx-account-channel-key-goes-here-xxx": "accountMessage",
+          "xxx-account-channel-key-goes-here-xxx": "ws_trade_ticker",
           "TICKER": "ticker"
         },
 
         "exchanges": [
-          "BITF"
+          "BTRX"
         ],
 
         "endpoints": {
