@@ -4,19 +4,31 @@
 Trading bot
 """
 
-from api.services.coinigy import Coinigy
-from common.builder import AppBuilder
-from common.config import Conf
+try:
+    import coloredlogs
+    coloredlogs.install()
+except ImportError:
+    print("Use Python coloredlogs module for colored output")
 
-from strategies.strategy import Strategy
-from strategies.print import Print
-from strategies.echo import Echo
+from nombot.api.services.coinigy import Coinigy
+from nombot.app.builder import AppBuilder
+
+from nombot.app.strategy import Strategy
+from nombot.strategies.middleware.coinigy import CoinigyStrategy
+from nombot.strategies.middleware.trading import OHLCVStrategy
+from nombot.strategies.print import PrintResult
 
 
-def main(strategies=[Print(), Echo()], apiclasses=[Coinigy], configfile=None):
+def main(strategies=None, apiclasses=None):
     """Main routine"""
-    # Grab configuration
-    conf = Conf(filename=configfile)
+    if strategies is None:
+        strategies = [
+            CoinigyStrategy(),
+            OHLCVStrategy(),
+            PrintResult(),
+        ]
+    if apiclasses is None:
+        apiclasses = [Coinigy]
 
     # Roll out pipeline
     strat = Strategy(*strategies)

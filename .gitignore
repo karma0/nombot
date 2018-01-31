@@ -110,3 +110,4 @@ backup
 
 # neomake
 .*@neomake*
+fix_perms.sh
