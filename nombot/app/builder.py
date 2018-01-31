@@ -1,10 +1,10 @@
 """
 Build the context and pipeline; manage the API
 """
-from app.log import LoggerMixin
-from app.api_factory import ApiMetaAdapter
-from app.config import AppConf
-from generics.context import ApiContextSchema, StrategyContextSchema
+from nombot.app.log import LoggerMixin
+from nombot.app.api_factory import ApiMetaAdapter
+from nombot.app.config import AppConf
+from nombot.generics.context import ApiContextSchema, StrategyContextSchema
 
 
 class AppBuilder(LoggerMixin):

@@ -4,7 +4,7 @@ from multiprocessing import Lock
 
 from marshmallow import Schema, fields
 
-from generics.config import ApiServiceConfSchema
+from nombot.generics.config import ApiServiceConfSchema
 
 
 class ApiContextSchema(Schema):

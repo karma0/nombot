@@ -1,8 +1,8 @@
 """Log Util"""
 
-from common.singleton import Singleton
-from common.logger import Logger as L
-from app.config import AppConf
+from nombot.common.singleton import Singleton
+from nombot.common.logger import Logger as L
+from nombot.app.config import AppConf
 
 
 class Logger(metaclass=Singleton):

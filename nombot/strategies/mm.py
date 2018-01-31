@@ -2,8 +2,8 @@
 Simple Market Maker strategy
 """
 
-from app.strategy import IStrategy
-from algorithms.echo import echo
+from nombot.app.strategy import IStrategy
+from nombot.algorithms.echo import echo
 
 
 class MarketMaker(IStrategy):

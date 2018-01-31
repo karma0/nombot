@@ -2,11 +2,11 @@
 API Core
 """
 
-from app.log import LoggerMixin
-from common.factory import BasicFactory
+from nombot.app.log import LoggerMixin
+from nombot.common.factory import BasicFactory
 
-from api.adapter.api import ApiAdapter
-from api.adapter.ws import WsAdapter
+from nombot.api.adapter.api import ApiAdapter
+from nombot.api.adapter.ws import WsAdapter
 
 
 class ApiMetaAdapter(LoggerMixin):

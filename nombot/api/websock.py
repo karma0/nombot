@@ -2,7 +2,7 @@
 
 from socketclusterclient import Socketcluster
 
-from app.log import LoggerMixin
+from nombot.app.log import LoggerMixin
 
 
 class SockMixin:

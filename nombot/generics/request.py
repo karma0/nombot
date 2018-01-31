@@ -3,7 +3,7 @@ Generic API Interface, mixin, and request maps/types
 """
 
 from marshmallow import fields, Schema, post_load
-from api.request import Request, REQUEST_MAP
+from nombot.api.request import Request, REQUEST_MAP
 
 
 class RequestSchema(Schema):

@@ -4,8 +4,8 @@ Websock API adapter
 
 from multiprocessing import Process
 
-from api.product import ApiProduct  # pylint: disable=E0611,E0401
-from api.websock import SockChannel  # pylint: disable=E0611,E0401
+from nombot.api.product import ApiProduct  # pylint: disable=E0611,E0401
+from nombot.api.websock import SockChannel  # pylint: disable=E0611,E0401
 
 
 class WsAdapter(ApiProduct):

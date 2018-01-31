@@ -3,7 +3,7 @@ Generic response types
 """
 
 from marshmallow import fields, Schema, post_load, pre_load
-from api.response import Result, RESPONSE_MAP
+from nombot.api.response import Result, RESPONSE_MAP
 
 
 class DefaultSchema(Schema):

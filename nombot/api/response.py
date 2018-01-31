@@ -2,8 +2,8 @@
 Generic API Interface, mixin, and response maps/types
 """
 
-from common.dotobj import DotObj
-from generics import exchange as X
+from nombot.common.dotobj import DotObj
+from nombot.generics import exchange as X
 
 
 RESPONSE_MAP = {

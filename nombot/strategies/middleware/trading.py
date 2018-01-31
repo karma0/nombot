@@ -1,7 +1,7 @@
 """Trading strategies"""
 import pandas as pd
 
-from app.strategy import IStrategy
+from nombot.app.strategy import IStrategy
 
 
 class OHLCV:

@@ -2,9 +2,7 @@
 Supplementary trading strategy
 """
 
-from stockstats import StockDataFrame
-
-from app.strategy import IStrategy
+from nombot.app.strategy import IStrategy
 
 
 class StockSupplement(IStrategy):

@@ -2,13 +2,13 @@
 
 from marshmallow import fields, pre_load
 
-from app.log import LoggerMixin
-from api.requestor import Req
-from api.websock import SockMixin
+from nombot.app.log import LoggerMixin
+from nombot.api.requestor import Req
+from nombot.api.websock import SockMixin
 
-from generics.request import RequestSchema
-from generics.response import WSResponseSchema, ResponseSchema
-from generics.exchange import NotificationSchema
+from nombot.generics.request import RequestSchema
+from nombot.generics.response import WSResponseSchema, ResponseSchema
+from nombot.generics.exchange import NotificationSchema
 
 
 class CoinigyResponseSchema(ResponseSchema):

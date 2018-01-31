@@ -6,7 +6,7 @@ clients that use it.
 
 import abc
 
-from app.log import LoggerMixin
+from nombot.app.log import LoggerMixin
 
 
 class Strategy:

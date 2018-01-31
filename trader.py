@@ -10,13 +10,13 @@ try:
 except ImportError:
     print("Use Python coloredlogs module for colored output")
 
-from api.services.coinigy import Coinigy
-from app.builder import AppBuilder
+from nombot.api.services.coinigy import Coinigy
+from nombot.app.builder import AppBuilder
 
-from app.strategy import Strategy
-from strategies.middleware.coinigy import CoinigyStrategy
-from strategies.middleware.trading import OHLCVStrategy
-from strategies.print import PrintResult
+from nombot.app.strategy import Strategy
+from nombot.strategies.middleware.coinigy import CoinigyStrategy
+from nombot.strategies.middleware.trading import OHLCVStrategy
+from nombot.strategies.print import PrintResult
 
 
 def main(strategies=None, apiclasses=None):
