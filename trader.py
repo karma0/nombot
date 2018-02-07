@@ -12,6 +12,7 @@ except ImportError:
 
 from nombot.api.services.coinigy import Coinigy
 from nombot.app.builder import AppBuilder
+from nombot.app.config import AppConf
 
 from nombot.app.strategy import Strategy
 from nombot.strategies.middleware.coinigy import CoinigyStrategy
@@ -19,7 +20,7 @@ from nombot.strategies.middleware.trading import OHLCVStrategy
 from nombot.strategies.print import PrintResult
 
 
-def main(strategies=None, apiclasses=None):
+def main(strategies=None, apiclasses=None, config=None):
     """Main routine"""
     if strategies is None:
         strategies = [
@@ -32,7 +33,8 @@ def main(strategies=None, apiclasses=None):
 
     # Roll out pipeline
     strat = Strategy(*strategies)
-    impl = AppBuilder(apiclasses, strat)
+    conf = AppConf(config)
+    impl = AppBuilder(apiclasses, strat, conf)
 
     # Run
     impl.run()
