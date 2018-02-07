@@ -17,23 +17,22 @@ class AppConf(metaclass=Singleton):
     conf = None
     services_by_name = {}  # type: dict
 
-    def __init__(self, config_file=None):
+    def __init__(self, config=None):
         # Bail if we've been loaded before
         if self.conf is not None:
             return
 
-        if config_file is None:
-            self.config_file = DEFAULT_CONFIG_FILE
+        if config is None:
+            self.config = DEFAULT_CONFIG_FILE
         else:
-            self.config_file = config_file
+            self.config = config
 
         try:
-            with open(self.config_file) as json_data:
+            self.conf = ConfSchema().loads(self.config).data
+        except:  # NOQA  # pylint: disable=bare-except
+            with open(self.config) as json_data:
                 data = json_data.read()
                 self.conf = ConfSchema().loads(data).data
-        except:  # NOQA
-            raise Exception(
-                f"Could not source config file: {self.config_file}")
 
     def get_api_services_by_name(self):
         """Return a dict of services by name"""
@@ -62,7 +61,7 @@ class AppConf(metaclass=Singleton):
                 .get("credentials")
                 .get("secret")
                 .copy(),
-                )
+            )
         except AttributeError:
             raise Exception(f"Couldn't find credentials for API: {apiname}")
 
@@ -70,9 +69,9 @@ class AppConf(metaclass=Singleton):
         """Returns the API endpoints"""
         try:
             return self.services_by_name\
-                    .get(apiname)\
-                    .get("endpoints")\
-                    .copy()
+                .get(apiname)\
+                .get("endpoints")\
+                .copy()
         except AttributeError:
             raise Exception(f"Couldn't find the API endpoints")
 
@@ -88,9 +87,9 @@ class AppConf(metaclass=Singleton):
         """Returns the websocket subscriptions"""
         try:
             return self.services_by_name\
-                    .get(apiname)\
-                    .get("subscriptions")\
-                    .copy()
+                .get(apiname)\
+                .get("subscriptions")\
+                .copy()
         except AttributeError:
             raise Exception(f"Couldn't find the websocket subscriptions")
 

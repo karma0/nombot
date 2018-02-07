@@ -3,7 +3,6 @@ Build the context and pipeline; manage the API
 """
 from nombot.app.log import LoggerMixin
 from nombot.app.api_factory import ApiMetaAdapter
-from nombot.app.config import AppConf
 from nombot.generics.context import ApiContextSchema, StrategyContextSchema
 
 
@@ -11,8 +10,8 @@ class AppBuilder(LoggerMixin):
     """Class that assembles and runs the application"""
     name = "builder"
 
-    def __init__(self, api_classes, strategy, config_file=None):
-        self.conf = AppConf(config_file)
+    def __init__(self, api_classes, strategy, config):
+        self.conf = config
 
         self.api_contexts = {}  # type: dict
 
