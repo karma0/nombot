@@ -20,7 +20,7 @@ with codecs.open(path.join(HERE, 'README.rst'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
-INSTALL_REQS = parse_requirements("requirements.txt", session='hack')
+INSTALL_REQS = parse_requirements("./requirements.txt", session='hack')
 
 # REQS is a list of requirement
 # e.g. ['django==1.5.1', 'mezzanine==1.4.6']
