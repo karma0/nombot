@@ -20,11 +20,9 @@ Python Dependencies
 ~~~~~~~~~~~~~~~~~~~
 
 -  Python 3.6+ is assumed
+-  ``bors``
 -  ``requests``
--  ``numpy``
--  ``pandas``
--  ``marshmallow`` for message passing, validation, and API message
-   object definition.
+-  ``marshmallow`` for message passing, validation, and API message object definition.
 
 Key Features
 ------------
