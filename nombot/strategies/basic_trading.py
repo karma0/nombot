@@ -2,7 +2,7 @@
 Supplementary trading strategy
 """
 
-from nombot.app.strategy import IStrategy
+from bors.app.strategy import IStrategy
 
 
 class StockSupplement(IStrategy):

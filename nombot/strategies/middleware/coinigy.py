@@ -1,9 +1,9 @@
 """Coinigy strategy, subscribes to all favorited channels"""
-from nombot.app.strategy import IStrategy
-from nombot.app.log import LoggerMixin
+from bors.app.strategy import IStrategy
+from bors.app.log import LoggerMixin
 
-from nombot.common.factory import Creator, Product
-from nombot.common.dotobj import DotObj
+from bors.common.factory import Creator, Product
+from bors.common.dotobj import DotObj
 
 
 class CoinigyFacade(LoggerMixin):

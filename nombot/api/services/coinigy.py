@@ -2,9 +2,9 @@
 
 from marshmallow import fields, pre_load
 
-from nombot.app.log import LoggerMixin
-from nombot.api.requestor import Req
-from nombot.api.websock import SockMixin
+from bors.app.log import LoggerMixin
+from bors.api.requestor import Req
+from bors.api.websock import SockMixin
 
 from nombot.generics.request import RequestSchema
 from nombot.generics.response import WSResponseSchema, ResponseSchema
