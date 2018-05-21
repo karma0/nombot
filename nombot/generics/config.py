@@ -2,15 +2,7 @@
 
 from marshmallow import Schema, fields, post_load
 
-
-class Conf:
-    """Loads a sane configuration"""
-    def __init__(self, **config):
-        self.conf = config
-
-    def get(self, *args, **kwargs):
-        """Get something"""
-        return self.conf.get(*args, **kwargs)
+from bors.generics.config import Conf
 
 
 class ApiEndpointConfSchema(Schema):
@@ -40,21 +32,10 @@ class ApiConfSchema(Schema):
     services = fields.List(fields.Nested(ApiServiceConfSchema()))
 
 
-class LogConfSchema(Schema):
-    """Log configuration object"""
-    level = fields.Str(required=True)
-    modules = fields.Dict(
-        fields.Nested('self',
-                      many=True,
-                      exclude=('modules',),
-                      default=None)
-        )
-
-
 class ConfSchema(Schema):
     """Root configuration schema"""
     currencies = fields.List(fields.Str())
-    logger = fields.Nested(LogConfSchema())
+    log_level = fields.Str()
     api = fields.Nested(ApiConfSchema())
 
     @post_load
