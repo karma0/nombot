@@ -2,7 +2,8 @@
 
 from collections import namedtuple
 
-from nombot.common.singleton import Singleton
+from bors.app.config import AppConf as BorsAppConf
+from bors.common.singleton import Singleton
 from nombot.generics.config import ConfSchema
 
 
@@ -13,26 +14,27 @@ DEFAULT_CONFIG_FILE = "config.json"
 
 
 class AppConf(metaclass=Singleton):
-    """Application-wide configuration singleton"""
+    """NomBot configuration Object"""
     conf = None
     services_by_name = {}  # type: dict
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, schema=None):
         # Bail if we've been loaded before
         if self.conf is not None:
             return
 
-        if config is None:
-            self.config = DEFAULT_CONFIG_FILE
-        else:
-            self.config = config
+        schema = ConfSchema() if schema is None else schema
 
+        self.config = DEFAULT_CONFIG_FILE if config is None else config
         try:
             self.conf = ConfSchema().loads(self.config).data
         except:  # NOQA  # pylint: disable=bare-except
             with open(self.config) as json_data:
                 data = json_data.read()
                 self.conf = ConfSchema().loads(data).data
+
+        print(f"""NOMAD CONF: {self.conf}""")
+        BorsAppConf(config=self.conf, schema=schema)
 
     def get_api_services_by_name(self):
         """Return a dict of services by name"""
