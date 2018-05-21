@@ -10,6 +10,7 @@ class CoinigyFacade(LoggerMixin):
     """Encapsulates some API functionality, initialized on result"""
     name = "coinigy_facade"
     chan_callback = None
+    conf = None
 
     def __init__(self, inst, api_context):
         self.context = api_context
@@ -141,7 +142,6 @@ class CoinigyStrategy(IStrategy):
 
     def __init__(self):
         self._strategy_data = CoinigyStrategyData()
-        self.create_logger()
 
     def bind(self, context):
         """Bind actions to the strategy context for a given result"""
