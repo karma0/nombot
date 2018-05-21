@@ -22,6 +22,8 @@ from nombot.api.services.coinigy import Coinigy
 
 def main(strategies=None, apiclasses=None, config=None):
     """Main routine"""
+    # instantiate this first to avoid weird errors
+    conf = AppConf(config)
     if strategies is None:
         strategies = [
             CoinigyStrategy(),
@@ -33,7 +35,6 @@ def main(strategies=None, apiclasses=None, config=None):
 
     # Roll out pipeline
     strat = Strategy(*strategies)
-    conf = AppConf(config)
     impl = AppBuilder(apiclasses, strat, conf)
 
     # Run
