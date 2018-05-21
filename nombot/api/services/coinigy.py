@@ -69,10 +69,7 @@ class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902
 
         print(f"""CTX: {self.context}""")
         # Websocket credentials object
-        self.creds = {
-            'apiKey': self.context["conf"]["credentials"]["apikey"],
-            'apiSecret': self.context["conf"]["credentials"]["secret"],
-        }
+        self.creds = self.context["credentials"]
 
         # API credetials object
         payload = {
