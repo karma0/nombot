@@ -2,7 +2,7 @@
 
 from marshmallow import Schema, fields, post_load
 
-from bors.generics.config import Conf
+from bors.generics.config import Conf, ConfSchema
 
 
 class ApiEndpointConfSchema(Schema):
@@ -32,17 +32,7 @@ class ApiConfSchema(Schema):
     services = fields.List(fields.Nested(ApiServiceConfSchema()))
 
 
-class ConfSchema(Schema):
+class NomConfSchema(ConfSchema):
     """Root configuration schema"""
     currencies = fields.List(fields.Str())
-    log_level = fields.Str()
     api = fields.Nested(ApiConfSchema())
-
-    @post_load
-    def make_conf(self, data):  # pylint: disable=R0201
-        """Generate a configuration object"""
-        return Conf(**data)
-
-    class Meta:
-        """Make sure that we bail if we can't parse"""
-        strict = True

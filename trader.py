@@ -14,16 +14,15 @@ from bors.app.builder import AppBuilder
 from bors.app.strategy import Strategy
 from bors.strategies.print import PrintResult
 
-from nombot.app.config import AppConf
+from nombot.app.config import NomAppConf
 from nombot.strategies.middleware.coinigy import CoinigyStrategy
 from nombot.strategies.middleware.trading import OHLCVStrategy
 from nombot.api.services.coinigy import Coinigy
 
 
-def main(strategies=None, apiclasses=None, config=None):
+def main(strategies=None, apiclasses=None, configfile=None):
     """Main routine"""
     # instantiate this first to avoid weird errors
-    conf = AppConf(config)
     if strategies is None:
         strategies = [
             CoinigyStrategy(),
@@ -34,8 +33,12 @@ def main(strategies=None, apiclasses=None, config=None):
         apiclasses = [Coinigy]
 
     # Roll out pipeline
+    configfile = "config.json" if configfile is None else configfile
+    with open(configfile) as json_data:
+        config = json_data.read()
+    app_conf = NomAppConf(config)
     strat = Strategy(*strategies)
-    impl = AppBuilder(apiclasses, strat, conf)
+    impl = AppBuilder(apiclasses, strat, app_conf)
 
     # Run
     impl.run()
