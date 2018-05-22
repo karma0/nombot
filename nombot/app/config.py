@@ -17,7 +17,6 @@ class NomAppConf(AppConf):
 
     def get_api_credentials(self, apiname):
         """Returns a Credentials object for API access"""
-        print(f"""self.data: {self.conf}""")
         for svc in self.conf.get("api").get("services"):
             if svc["name"] == apiname:
                 try:
