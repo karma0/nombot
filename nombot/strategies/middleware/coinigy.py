@@ -83,20 +83,16 @@ class CoinigyResultParserFactory(Creator):
         return CoinigyParser(*args, **kwargs)
 
 
-class CoinigyParser(Product, LoggerMixin):
+class CoinigyParser(Product):
     """Result parsing class"""
-    name = "coinigy_parser"
     _call_lookup = {}  # type: dict
 
     def __init__(self, strategy_data, context):
-        self.create_logger()
         self.strategy_data = strategy_data
         self.context = context
         self.result = self.context.get("result").data
         self.api_ctx = self.context.get("conf")
         self.api_ctxs = self.context.get("api_contexts")
-        self.log.warning(f"""STRATEGY_DATA!{strategy_data}""")
-        self.log.warning(f"""CONTEXT!{context}""")
 
     def _lookup(self, callname):
         """Return a callable function based on the name"""

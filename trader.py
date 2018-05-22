@@ -10,10 +10,10 @@ try:
 except ImportError:
     print("Use Python coloredlogs module for colored output")
 
-from bors.app.builder import AppBuilder
 from bors.app.strategy import Strategy
 from bors.strategies.print import PrintResult
 
+from nombot.app.builder import NomAppBuilder
 from nombot.app.config import NomAppConf
 from nombot.strategies.middleware.coinigy import CoinigyStrategy
 from nombot.strategies.middleware.trading import OHLCVStrategy
@@ -38,7 +38,7 @@ def main(strategies=None, apiclasses=None, configfile=None):
         config = json_data.read()
     app_conf = NomAppConf(config)
     strat = Strategy(*strategies)
-    impl = AppBuilder(apiclasses, strat, app_conf)
+    impl = NomAppBuilder(apiclasses, strat, app_conf)
 
     # Run
     impl.run()

@@ -64,17 +64,15 @@ class Coinigy(LoggerMixin, SockMixin):  # pylint: disable=R0902
         self.result_schema = CoinigyResponseSchema
         self.ws_result_schema = CoinigyWSResponseSchema
 
-        # ApiContext
         self.context = context
 
-        print(f"""CTX: {self.context}""")
         # Websocket credentials object
-        self.creds = self.context["credentials"]
+        self.creds = self.context.get("credentials")
 
         # API credetials object
         payload = {
-            'X-API-KEY': self.context["conf"]["credentials"]["apikey"],
-            'X-API-SECRET': self.context["conf"]["credentials"]["secret"],
+            'X-API-KEY': self.creds.get("apikey"),
+            'X-API-SECRET': self.creds.get("secret")
         }
 
         self.create_logger()

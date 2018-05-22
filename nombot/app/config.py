@@ -1,37 +1,23 @@
 """Configuration module"""
 
-from collections import namedtuple
-
 from nombot.generics.config import NomConfSchema
 from bors.app.config import AppConf
 
 
-Credentials = namedtuple('Credentials', ('api', 'secret'))
-
-
 class NomAppConf(AppConf):
     """NomBot configuration Object"""
-    def __init__(self, config=None):
-        super().__init__(config)
-        self.conf = NomConfSchema().load(self.raw_conf).data
+    schema = NomConfSchema
 
     def get_api_credentials(self, apiname):
         """Returns a Credentials object for API access"""
-        for svc in self.conf.get("api").get("services"):
-            if svc["name"] == apiname:
-                try:
-                    return Credentials(
-                        api=svc
-                        .get("credentials")
-                        .get("apikey"),
-
-                        secret=svc
-                        .get("credentials")
-                        .get("secret"),
-                    )
-                except AttributeError:
-                    raise Exception(
-                        f"Couldn't find credentials for API: {apiname}")
+        try:
+            creds = self.get_api_service(apiname).get("credentials")
+            return {  # simultaneous assign/remove
+                "apikey": creds.pop("apikey", None),
+                "secret": creds.pop("secret", None),
+            }
+        except AttributeError:
+            raise Exception(f"Couldn't find credentials for API: {apiname}")
 
     def get_currencies(self):
         """Returns the currencies that we'll be working with"""
