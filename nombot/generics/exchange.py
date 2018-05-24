@@ -3,7 +3,7 @@
 from marshmallow import Schema, post_load
 from marshmallow import fields as f
 
-from nombot.common.dotobj import DotObj
+from bors.common.dotobj import DotObj
 
 
 class GenericObject(DotObj):

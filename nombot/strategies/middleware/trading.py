@@ -1,7 +1,7 @@
 """Trading strategies"""
 import pandas as pd
 
-from nombot.app.strategy import IStrategy
+from bors.app.strategy import IStrategy
 
 
 class OHLCV:
@@ -27,7 +27,6 @@ class OHLCVStrategy(IStrategy):
     def __init__(self, hist_size=100):
         self._data = OHLCV(hist_size)
         self.hist_size = hist_size
-        self.create_logger()
 
     def bind(self, context):
         """Bind actions to the strategy context for a given result"""

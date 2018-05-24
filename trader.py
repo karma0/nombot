@@ -10,18 +10,19 @@ try:
 except ImportError:
     print("Use Python coloredlogs module for colored output")
 
-from nombot.api.services.coinigy import Coinigy
-from nombot.app.builder import AppBuilder
-from nombot.app.config import AppConf
+from bors.app.strategy import Strategy
+from bors.strategies.print import PrintResult
 
-from nombot.app.strategy import Strategy
+from nombot.app.builder import NomAppBuilder
+from nombot.app.config import NomAppConf
 from nombot.strategies.middleware.coinigy import CoinigyStrategy
 from nombot.strategies.middleware.trading import OHLCVStrategy
-from nombot.strategies.print import PrintResult
+from nombot.api.services.coinigy import Coinigy
 
 
-def main(strategies=None, apiclasses=None, config=None):
+def main(strategies=None, apiclasses=None, configfile=None):
     """Main routine"""
+    # instantiate this first to avoid weird errors
     if strategies is None:
         strategies = [
             CoinigyStrategy(),
@@ -32,9 +33,12 @@ def main(strategies=None, apiclasses=None, config=None):
         apiclasses = [Coinigy]
 
     # Roll out pipeline
+    configfile = "config.json" if configfile is None else configfile
+    with open(configfile) as json_data:
+        config = json_data.read()
+    app_conf = NomAppConf(config)
     strat = Strategy(*strategies)
-    conf = AppConf(config)
-    impl = AppBuilder(apiclasses, strat, conf)
+    impl = NomAppBuilder(apiclasses, strat, app_conf)
 
     # Run
     impl.run()

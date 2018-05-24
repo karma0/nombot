@@ -20,7 +20,7 @@ with codecs.open(path.join(HERE, 'README.rst'), encoding='utf-8') as f:
     LONG_DESCRIPTION = f.read()
 
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
-INSTALL_REQS = parse_requirements("requirements.txt", session='hack')
+INSTALL_REQS = parse_requirements("./requirements.txt", session='hack')
 
 # REQS is a list of requirement
 # e.g. ['django==1.5.1', 'mezzanine==1.4.6']
@@ -49,7 +49,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.3',  # Required
+    version='2.0.0',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
