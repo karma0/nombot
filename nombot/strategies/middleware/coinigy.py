@@ -1,15 +1,16 @@
 """Coinigy strategy, subscribes to all favorited channels"""
-from nombot.app.strategy import IStrategy
-from nombot.app.log import LoggerMixin
+from bors.app.strategy import IStrategy
+from bors.app.log import LoggerMixin
 
-from nombot.common.factory import Creator, Product
-from nombot.common.dotobj import DotObj
+from bors.common.factory import Creator, Product
+from bors.common.dotobj import DotObj
 
 
 class CoinigyFacade(LoggerMixin):
     """Encapsulates some API functionality, initialized on result"""
     name = "coinigy_facade"
     chan_callback = None
+    conf = None
 
     def __init__(self, inst, api_context):
         self.context = api_context
@@ -82,20 +83,16 @@ class CoinigyResultParserFactory(Creator):
         return CoinigyParser(*args, **kwargs)
 
 
-class CoinigyParser(Product, LoggerMixin):
+class CoinigyParser(Product):
     """Result parsing class"""
-    name = "coinigy_parser"
     _call_lookup = {}  # type: dict
 
     def __init__(self, strategy_data, context):
-        self.create_logger()
         self.strategy_data = strategy_data
         self.context = context
         self.result = self.context.get("result").data
         self.api_ctx = self.context.get("conf")
         self.api_ctxs = self.context.get("api_contexts")
-        self.log.warning(f"""STRATEGY_DATA!{strategy_data}""")
-        self.log.warning(f"""CONTEXT!{context}""")
 
     def _lookup(self, callname):
         """Return a callable function based on the name"""
@@ -141,7 +138,6 @@ class CoinigyStrategy(IStrategy):
 
     def __init__(self):
         self._strategy_data = CoinigyStrategyData()
-        self.create_logger()
 
     def bind(self, context):
         """Bind actions to the strategy context for a given result"""

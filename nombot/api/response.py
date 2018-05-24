@@ -2,7 +2,7 @@
 Generic API Interface, mixin, and response maps/types
 """
 
-from nombot.common.dotobj import DotObj
+from bors.common.dotobj import DotObj
 from nombot.generics import exchange as X
 
 
