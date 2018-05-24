@@ -2,7 +2,7 @@
 Generic API Interface, mixin, and request maps/types
 """
 
-from nombot.generics import exchange as X
+from bors.generics import coinigy as X
 
 
 REQUEST_MAP = {

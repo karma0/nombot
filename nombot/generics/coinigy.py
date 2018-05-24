@@ -5,36 +5,17 @@ from marshmallow import fields as f
 from bors.generics.common import ResultSchema, RequestSchema, GenericSchema
 
 
-class OrderBookSchema(ResultSchema):
-    """Order Book"""
-    bids = f.List()
-    asks = f.List()
-    timestamp = f.Int()
-    datetime = f.Str()
-
-
-class PriceTickerSchema(ResultSchema):
-    """Ticker!"""
-    symbol = f.Str(required=True)
-    info = f.Dict(required=True)
-    timestamp = f.Int()
-    datetime = f.Str()
-    high = f.Float()
-    low = f.Float()
-    bid = f.Float()
-    bidVolume = f.Float()
-    ask = f.Float()
-    askVolume = f.Float()
-    vwap = f.Float()
-    open = f.Float()
-    close = f.Float()
-    last = f.Float()
-    previousClose = f.Float()
-    change = f.Float()
-    percentage = f.Float()
-    average = f.Float()
-    baseVolume = f.Float()
-    quoteVolume = f.Float()
+class NotificationSchema(ResultSchema):
+    """Notification!"""
+    notification_id = f.Str(required=True)
+    notification_type_title = f.Str(required=True)
+    notification_type_message = f.Str(required=True)
+    notification_style = f.Str(required=True)
+    notification_vars = f.Str()
+    notification_title_vars = f.Str()
+    notification_pinned = f.Str()
+    notification_sound = f.Str()
+    notification_sound_id = f.Str()
 
 
 class AccountSchema(ResultSchema):
@@ -254,6 +235,16 @@ class MarketDataSchema(ResultSchema):
 class HistorySchema(MarketDataSchema):
     """A history of market data"""
     history = f.List(f.Nested(HistoryItemSchema()), required=True)
+
+
+class AsksSchema(MarketDataSchema):
+    """A list of open sell market orders"""
+    asks = f.List(f.Nested(OrderItemSchema()), required=True)
+
+
+class BidsSchema(MarketDataSchema):
+    """A list of open buy market orders"""
+    bids = f.List(f.Nested(OrderItemSchema()), required=True)
 
 
 class OrdersSchema(MarketDataSchema):

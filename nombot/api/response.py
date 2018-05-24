@@ -3,7 +3,7 @@ Generic API Interface, mixin, and response maps/types
 """
 
 from bors.common.dotobj import DotObj
-from nombot.generics import exchange as X
+from bors.generics import coinigy as X
 
 
 RESPONSE_MAP = {
