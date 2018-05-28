@@ -3,25 +3,14 @@ Generic API Interface, mixin, and response maps/types
 """
 
 from bors.common.dotobj import DotObj
-from bors.generics import coinigy as X
+from nombot.generics import exchange as X
 
 
 RESPONSE_MAP = {
-    "accounts": X.AccountSchema(many=True),
-    "balances": X.BalanceSchema(many=True),
-    "alerts": X.AllAlertsSchema(),
-    "newsFeed": X.NewsItemSchema(many=True),
-    "orderTypes": X.OrderTypesCallSchema(),
-    "refreshBalance": X.BalanceSchema(),
-    "addOrder": X.OrderReferenceSchema(),
-    "exchanges": X.ExchangeSchema(many=True),
-    "markets": X.MarketSchema(many=True),
-    "data": X.AllMarketDataSchema(),
-    "ticker": X.TickSchema(),
-    "trade": X.WsTradeChannel(),
-    "orders": X.WsOrderChannel(many=True),
-    "Favorite": X.FavoriteTickSchema(many=True),
-    "all": X.AllMarketDataSchema(),
+    "load_markets": X.MarketSchema(),
+    "fetch_order_book": X.OrderBookSchema(),
+    "fetch_ticker": X.TickerSchema(),
+    "fetch_trades": X.TradeSchema(many=True),
 }
 
 
