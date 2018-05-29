@@ -1,7 +1,6 @@
 """CCXT API Facade"""
 
 import ccxt
-import json
 import asyncio
 
 from ccxt.base.errors import ExchangeNotAvailable, ExchangeError
@@ -12,29 +11,6 @@ from bors.app.log import LoggerMixin
 
 from nombot.generics.request import RequestSchema
 from nombot.generics.response import ResponseSchema
-
-
-class CCXTResponseSchema(ResponseSchema):
-    """Schema defining how the API will respond"""
-    event = fields.Str()  # for WS response
-    err_num = fields.Str()
-    err_msg = fields.Str()
-
-    @pre_load
-    def combine_errors(self, in_data):  # pylint: disable=no-self-use
-        """Convert the error to the expected output"""
-        if "err_num" in in_data:
-            in_data["errors"] = dict()
-            in_data["errors"][in_data["err_num"]] = in_data["err_msg"]
-
-    def get_result(self, data):
-        """Return the actual result data"""
-        return data.get("data", "")
-
-    class Meta:
-        """Add 'data' field"""
-        strict = True
-        additional = ("data",)
 
 
 class CCXT:
@@ -84,7 +60,7 @@ class CCXT:
                 results.append(result)
             except (ExchangeNotAvailable, ExchangeError):
                 pass
-        return json.dumps(results)
+        return results
 
     async def call_all_on_syms(self, callname, *args, **kwargs):
         """Cycle through all configured exchanges and symbols and make a call"""
@@ -101,7 +77,7 @@ class CCXT:
                 except (ExchangeNotAvailable, ExchangeError):
                     pass
 
-        return json.dumps(results)
+        return results
 
 
 class CCXTApi(LoggerMixin):  # pylint: disable=R0902
@@ -120,7 +96,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
         self.request_schema = RequestSchema
-        self.result_schema = CCXTResponseSchema
+        self.result_schema = ResponseSchema
 
         self.context = context
         self.conf = context.get("conf")
