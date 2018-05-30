@@ -18,7 +18,7 @@ class CCXT:
     sym = {}  # type: dict
 
     def __init__(self, exchanges=None, symbols=None, rate_limit=None):
-        if exchanges is None:
+        if exchanges is None or not exchanges:
             exchanges = ccxt.exchanges
 
         for exch in exchanges:
@@ -107,8 +107,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
         self.create_logger()
         self.log.debug(f"Starting API Facade {self.name}")
 
-        #self.ccxt = CCXT(self.conf["exchanges"])
-        self.ccxt = CCXT()
+        self.ccxt = CCXT(self.conf["exchanges"])
 
     def call(self, callname, data=None, **args):
         """Substitute for REST api as defined in bors.api.requestor.Req"""

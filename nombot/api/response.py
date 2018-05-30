@@ -8,7 +8,7 @@ from nombot.generics import exchange as X
 
 RESPONSE_MAP = {
     "load_markets": X.MarketSchema(),
-    "fetch_order_book": X.OrderBookSchema(),
+    "fetch_order_book": X.OrderBookSchema(many=True),
     "fetch_ticker": X.TickerSchema(),
     "fetch_trades": X.TradeSchema(many=True),
 }
