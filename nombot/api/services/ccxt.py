@@ -43,7 +43,7 @@ class CCXT:
                             self.sym[exch] += [sym for sym in [
                                 f"{sym1}/{sym2}",
                                 f"{sym2}/{sym1}"
-                            ] if sym in self.X[exchange].symbols]
+                            ] if sym in self.X[exch].symbols]
 
             except:
                 del self.X[exch]
@@ -107,7 +107,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
         self.create_logger()
         self.log.debug(f"Starting API Facade {self.name}")
 
-        self.ccxt = CCXT(self.conf["exchanges"])
+        self.ccxt = CCXT(self.conf["exchanges"], self.context["currencies"])
 
     def call(self, callname, data=None, **args):
         """Substitute for REST api as defined in bors.api.requestor.Req"""
