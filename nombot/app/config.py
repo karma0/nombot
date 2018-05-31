@@ -23,9 +23,11 @@ class NomAppConf(AppConf):
         """Returns the currencies that we'll be working with"""
         try:
             if service is not None:
-                svc_conf = self.conf.services_by_name[service]
+                svc_conf = self.services_by_name[service]
+                print(f"""svc_conf: {svc_conf}""")
                 return svc_conf.get("currencies", []).copy() \
-                    + self.conf.get("currencies").copy()
-            return self.conf.get("currencies").copy()
+                    + self.conf.get("currencies", []).copy()
+            print(f"""currencies: {self.conf.get("currencies")}""")
+            return self.conf.get("currencies", []).copy()
         except AttributeError:
             return []

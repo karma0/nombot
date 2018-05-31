@@ -20,6 +20,7 @@ class ApiCredsConfSchema(Schema):
 class ApiServiceConfSchema(Schema):
     """API service configuration object"""
     name = fields.Str(required=True)
+    currencies = fields.List(fields.Str())
     credentials = fields.Nested(ApiCredsConfSchema())
     subscriptions = fields.Dict()
     exchanges = fields.List(fields.Str())

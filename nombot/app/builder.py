@@ -18,7 +18,7 @@ class NomAppBuilder(AppBuilder):
             "name": cls.name,
             "conf": self.conf.get_api_service(cls.name),
             "calls": self.conf.get_api_calls(),
-            "currencies": self.conf.get_currencies(),
+            "currencies": self.conf.get_currencies(cls.name),
             "credentials": self.conf.get_api_credentials(cls.name),
             "log_level": self.conf.get_log_level(),
             "cls": cls,
