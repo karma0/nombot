@@ -30,6 +30,8 @@ class CCXT:
                     self.X[exch].rate_limit = rate_limit
                 self.X[exch].enable_rate_limit = True
 
+                self.X[exch].load_markets()
+
                 # Add supported symbols for given exchange
                 self.sym[exch] = []
                 if symbols is None:
@@ -63,20 +65,18 @@ class CCXT:
         return results
 
     async def call_all_on_syms(self, callname, *args, **kwargs):
-        """Cycle through all configured exchanges and symbols and make a call"""
+        """Cycle through configured exchanges and symbols and make a call"""
         print(f"""Calling call_all_on_syms: {callname}""")
         results = []
         for exchange, ex in self.X.items():
-            if self.sym[exchange] is None:
-                continue
-            for sym in self.sym[exchange]:
-                print(f"""Exchange: {exchange}; Symbol: {sym}""")
-                try:
-                    result = self.call(ex, callname, sym, *args, **kwargs)
-                    results.append(result)
-                except (ExchangeNotAvailable, ExchangeError):
-                    pass
-
+            if self.sym[exchange] is not None:
+                for sym in self.sym[exchange]:
+                    print(f"""Exchange: {exchange}; Symbol: {sym}""")
+                    try:
+                        result = await self.call(ex, callname, sym, *args, **kwargs)
+                        results.append(result)
+                    except (ExchangeNotAvailable, ExchangeError):
+                        pass
         return results
 
 
