@@ -36,12 +36,11 @@ class CCXTExchange:
 
         if not self.symbols:
             self.symbols = getattr(self._ex, "symbols", [])
-        print(f"""SYMS: {self.symbols}""")
 
     async def load(self, *args, **kwargs):
         """Load the markets; initializing the exchange object with data"""
         markets = await self._ex.load_markets(*args, **kwargs)
-        self.markets = {
+        self.markets = {  # is this the fastest?
             "/".join(pair): markets["/".join(pair)]
             for pair in product(self.symbols, self.symbols)
             if pair in markets
