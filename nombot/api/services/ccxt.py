@@ -169,8 +169,9 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
     name = "ccxt"
 
     local_overrides = {
+        "fetchOHLCV": "call_over_syms",
         "fetchOrderBook": "call_over_syms",
-        "fetch_order_book": "call_over_syms",
+        "fetchTicker": "call_over_syms",
         "default": "call_on_exchanges",  # required
     }
 

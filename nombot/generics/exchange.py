@@ -5,14 +5,6 @@ from marshmallow import fields as f
 from bors.generics.common import ResultSchema
 
 
-class OrderBookSchema(ResultSchema):
-    """Order Book"""
-    bids = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
-    asks = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
-    timestamp = f.Int()
-    datetime = f.Str()
-
-
 class LimitSchema(ResultSchema):
     """A Limit"""
     min = f.Float()
@@ -23,6 +15,41 @@ class AmountPriceSchema(ResultSchema):
     """Limits"""
     amount = f.Nested(LimitSchema, required=True)
     price = f.Nested(LimitSchema, required=True)
+
+
+class FeeSchema(ResultSchema):
+    """A fee"""
+    currency = f.Str(required=True)
+    cost = f.Float(required=True)
+    rate = f.Float(required=True)
+
+
+class OrderSchema(ResultSchema):
+    """Order"""
+    id = f.Str(required=True)
+    datetime = f.Str(required=True)
+    timestamp = f.Int(required=True)
+    lastTradeTimestamp = f.Int(required=True)
+    status = f.Str(required=True)
+    symbol = f.Str(required=True)
+    type = f.Str(required=True)
+    side = f.Str(required=True)
+    price = f.Float(required=True)
+    amount = f.Float(required=True)
+    filled = f.Float(required=True)
+    remaining = f.Float(required=True)
+    cost = f.Float(required=True)
+    trades = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
+    fee = f.Nested(FeeSchema, required=True)
+    info = f.Dict(required=True)
+
+
+class OrderBookSchema(ResultSchema):
+    """Order Book"""
+    bids = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
+    asks = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
+    timestamp = f.Int()
+    datetime = f.Str()
 
 
 class MarketSchema(ResultSchema):
@@ -80,3 +107,19 @@ class TradeSchema(ResultSchema):
     side = f.Str(required=True)
     price = f.Float(required=True)
     amount = f.Float(required=True)
+
+
+class MyTradeSchema(ResultSchema):
+    """A single trade on my account"""
+    id = f.Str(required=True)
+    timestamp = f.Int(required=True)
+    datetime = f.Str(required=True)
+    symbol = f.Str(required=True)
+    order = f.Str()
+    type = f.Str(required=True)
+    side = f.Str(required=True)
+    price = f.Float(required=True)
+    amount = f.Float(required=True)
+    cost = f.Float(required=True)
+    fee = f.Nested(FeeSchema, required=True)
+    info = f.Dict(required=True)
