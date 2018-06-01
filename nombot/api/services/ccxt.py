@@ -35,13 +35,16 @@ class CCXTExchange:
     def __post_init__(self):
         # instantiate exchange object
         self._ex = getattr(ccxt, self.name)()
-        print(f""""HAS {self._ex.has}""")
 
         if self.rate_limit is not None:
             self._ex.rate_limit = self.rate_limit
         self._ex.enable_rate_limit = True
 
         self.loop.run_until_complete(self.load())
+
+    def has(self, callname):
+        """Returns `has` value of exchange"""
+        return self._ex.has.get(callname, False)
 
     async def load(self, reload=False, *args, **kwargs):
         """Load the markets; populating the exchange object with data"""
@@ -88,6 +91,7 @@ class CCXTExchange:
     async def call(self, callname, *args, **kwargs):
         """Generalized async `call` method, pass callname and parameters"""
         try:
+
             return await getattr(self._ex, callname)(*args, **kwargs)
         except TypeError:
             raise AttributeError(f"Failed to execute call {callname} on "
@@ -107,33 +111,46 @@ class CCXT:
     """CCXTExchange wrapper"""
     _ex = {}  # type: dict
 
-    def __init__(self, exchanges=None, symbols=None, rate_limit=None):
+    def __init__(self, log, exchanges=None, symbols=None, rate_limit=None):
+        self.log = log
+
         if exchanges is None or not exchanges:
             exchanges = ccxt.exchanges
 
         for exch in exchanges:
             self._ex[exch] = CCXTExchange(exch, symbols, rate_limit)
 
+    def call_capable(self, exch, callname):
+        """Determine if the exchange supports the call"""
+        if self._ex[exch].has(callname):
+            return self._ex[exch].has(callname)
+        self.log.warn(f"No method available -- "
+              f"exchange: {exch}; "
+              f"call: {callname}")
+        return False
+
     def call_on_exchanges(self, callname, *args, **kwargs):
         """Cycle through all configured exchanges to make a call"""
         results = {}
         for ex in self._ex.values():
-            try:
-                results[ex.name] = ex.loop.run_until_complete(
-                    ex.call(callname, *args, **kwargs))
-            except (ExchangeNotAvailable, ExchangeError):
-                pass
+            if self.call_capable(ex.name, callname):
+                try:
+                    results[ex.name] = ex.loop.run_until_complete(
+                        ex.call(callname, *args, **kwargs))
+                except (ExchangeNotAvailable, ExchangeError):
+                    pass
         return results
 
     def call_over_syms(self, callname, *args, **kwargs):
         """Cycle through configured exchanges and symbols and make a call"""
         results = {}
         for ex in self._ex.values():
-            try:
-                results[ex.name] = ex.loop.run_until_complete(
-                    ex.call_over_syms(callname, *args, **kwargs))
-            except (ExchangeNotAvailable, ExchangeError):
-                pass
+            if self.call_capable(ex.name, callname):
+                try:
+                    results[ex.name] = ex.loop.run_until_complete(
+                        ex.call_over_syms(callname, *args, **kwargs))
+                except (ExchangeNotAvailable, ExchangeError):
+                    pass
         return results
 
 
@@ -152,6 +169,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
     name = "ccxt"
 
     local_overrides = {
+        "fetchOrderBook": "call_over_syms",
         "fetch_order_book": "call_over_syms",
         "default": "call_on_exchanges",  # required
     }
@@ -170,7 +188,8 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
         self.create_logger()
         self.log.debug(f"Starting API Facade {self.name}")
 
-        self.ccxt = CCXT(self.conf["exchanges"], self.context["currencies"])
+        self.ccxt = CCXT(self.log, self.conf["exchanges"],
+                         self.context["currencies"])
 
     def call(self, callname, *args, **kwargs):
         """Substitute for REST api as defined in bors.api.requestor.Req"""

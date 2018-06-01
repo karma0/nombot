@@ -7,10 +7,11 @@ from nombot.generics import exchange as X
 
 
 RESPONSE_MAP = {
-    "load_markets": X.MarketSchema(),
-    "fetch_order_book": X.OrderBookSchema(many=True),
-    "fetch_ticker": X.TickerSchema(),
-    "fetch_trades": X.TradeSchema(many=True),
+    "fetchMarkets": X.MarketSchema(),
+    "fetchOrderBook": X.OrderBookSchema(many=True),
+    "fetchTicker": X.TickerSchema(),
+    "fetchTickers": X.TickerSchema(many=True),
+    "fetchTrades": X.TradeSchema(many=True),
 }
 
 
