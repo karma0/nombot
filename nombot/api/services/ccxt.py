@@ -79,7 +79,6 @@ class CCXT:
 
     async def call_over_syms(self, callname, *args, **kwargs):
         """Cycle through configured exchanges and symbols and make a call"""
-        print(f"""Calling call_all_on_syms: {callname}""")
         for exchange, ex in self._ex.items():
             for sym, mkt in ex.markets.items():
                 print(f"""Exchange: {exchange}; Symbol: {sym}""")
