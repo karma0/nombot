@@ -35,6 +35,7 @@ class CCXTExchange:
     def __post_init__(self):
         # instantiate exchange object
         self._ex = getattr(ccxt, self.name)()
+        print(f""""HAS {self._ex.has}""")
 
         if self.rate_limit is not None:
             self._ex.rate_limit = self.rate_limit
