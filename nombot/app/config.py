@@ -8,13 +8,6 @@ class NomAppConf(AppConf):
     """NomBot configuration Object"""
     schema = NomConfSchema
 
-    def get_api_credentials(self, apiname):
-        """Returns a Credentials object for API access"""
-        try:
-            return self.get_api_service(apiname).get("credentials", None)
-        except AttributeError:
-            raise Exception(f"Couldn't find credentials for API: {apiname}")
-
     def get_currencies(self, service=None):
         """Returns the currencies that we'll be working with"""
         try:

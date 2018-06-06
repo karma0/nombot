@@ -124,7 +124,15 @@ class CCXT:
             exchanges = ccxt.exchanges
 
         for exch in exchanges:
-            creds = credentials.get(exch, None)
+
+            # Extract credentials if they exist
+            creds = None
+            if credentials is not None:
+                for cred in credentials:
+                    if cred.get("name") == exch:
+                        creds = cred.copy()
+
+            # launch exchange
             self._ex[exch] = CCXTExchange(exch,
                                           currencies=symbols,
                                           rate_limit=rate_limit,

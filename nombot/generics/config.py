@@ -2,7 +2,7 @@
 
 from marshmallow import Schema, fields, post_load
 
-from bors.generics.config import Conf, ConfSchema
+from bors.generics.config import ConfSchema
 
 
 class ApiEndpointConfSchema(Schema):
@@ -11,9 +11,10 @@ class ApiEndpointConfSchema(Schema):
     websocket = fields.Str()
 
 
-class ApiCredsConfSchema(Schema):
-    """API credentials configuration object"""
-    apikey = fields.Str()
+class ApiCredConfSchema(Schema):
+    """API credential configuration object"""
+    name = fields.Str()
+    apiKey = fields.Str()
     secret = fields.Str()
 
 
@@ -21,7 +22,7 @@ class ApiServiceConfSchema(Schema):
     """API service configuration object"""
     name = fields.Str(required=True)
     currencies = fields.List(fields.Str())
-    credentials = fields.Nested(ApiCredsConfSchema())
+    credentials = fields.List(fields.Nested(ApiCredConfSchema))
     subscriptions = fields.Dict()
     exchanges = fields.List(fields.Str())
     endpoints = fields.Nested(ApiEndpointConfSchema())
