@@ -11,11 +11,7 @@ class NomAppConf(AppConf):
     def get_api_credentials(self, apiname):
         """Returns a Credentials object for API access"""
         try:
-            creds = self.get_api_service(apiname).get("credentials")
-            return {  # simultaneous assign/remove
-                "apikey": creds.pop("apikey", None),
-                "secret": creds.pop("secret", None),
-            }
+            return self.get_api_service(apiname).get("credentials", None)
         except AttributeError:
             raise Exception(f"Couldn't find credentials for API: {apiname}")
 

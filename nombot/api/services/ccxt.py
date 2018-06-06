@@ -19,6 +19,7 @@ class CCXTExchange:
     name: str
     currencies: list
     rate_limit: int = None
+    credentials: dict = None
 
     _ex = None
     loop = asyncio.get_event_loop()
@@ -39,6 +40,10 @@ class CCXTExchange:
         if self.rate_limit is not None:
             self._ex.rate_limit = self.rate_limit
         self._ex.enable_rate_limit = True
+
+        if self.credentials is not None:
+            self._ex.apiKey = self.credentials.get("apiKey", None)
+            self._ex.secret = self.credentials.get("secret", None)
 
         self.loop.run_until_complete(self.load())
 
@@ -111,22 +116,28 @@ class CCXT:
     """CCXTExchange wrapper"""
     _ex = {}  # type: dict
 
-    def __init__(self, log, exchanges=None, symbols=None, rate_limit=None):
+    def __init__(self, log, exchanges=None, symbols=None, rate_limit=None,
+                 credentials=None):
         self.log = log
 
         if exchanges is None or not exchanges:
             exchanges = ccxt.exchanges
 
         for exch in exchanges:
-            self._ex[exch] = CCXTExchange(exch, symbols, rate_limit)
+            creds = credentials.get(exch, None)
+            self._ex[exch] = CCXTExchange(exch,
+                                          currencies=symbols,
+                                          rate_limit=rate_limit,
+                                          credentials=creds
+                                         )
 
     def call_capable(self, exch, callname):
         """Determine if the exchange supports the call"""
         if self._ex[exch].has(callname):
             return self._ex[exch].has(callname)
         self.log.warn(f"No method available -- "
-              f"exchange: {exch}; "
-              f"call: {callname}")
+                      f"exchange: {exch}; "
+                      f"call: {callname}")
         return False
 
     def call_on_exchanges(self, callname, *args, **kwargs):
@@ -189,8 +200,11 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
         self.create_logger()
         self.log.debug(f"Starting API Facade {self.name}")
 
-        self.ccxt = CCXT(self.log, self.conf["exchanges"],
-                         self.context["currencies"])
+        self.ccxt = CCXT(self.log,
+                         self.conf["exchanges"],
+                         self.context["currencies"],
+                         self.creds
+                         )
 
     def call(self, callname, *args, **kwargs):
         """Substitute for REST api as defined in bors.api.requestor.Req"""
