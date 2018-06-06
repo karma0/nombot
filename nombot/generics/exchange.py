@@ -123,3 +123,11 @@ class MyTradeSchema(ResultSchema):
     cost = f.Float(required=True)
     fee = f.Nested(FeeSchema, required=True)
     info = f.Dict(required=True)
+
+
+class BalanceSchema(ResultSchema):
+    """The Balances"""
+    info = f.Dict(required=True)
+    free = f.Dict()
+    used = f.Dict()
+    total = f.Dict()
