@@ -43,6 +43,7 @@ class ResponseSchema(CommonResponseSchema):
         if "errors" in data:
             return Result(errors=data["errors"])
         callname = self.context.get("callname")
+        print(f"""RESULT: {self.get_result(data)}""")
         result = {
             "callname": callname,
             "result": RESPONSE_MAP[callname]  # type: ignore

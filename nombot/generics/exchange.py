@@ -127,7 +127,7 @@ class MyTradeSchema(ResultSchema):
 
 class BalanceSchema(ResultSchema):
     """The Balances"""
-    info = f.Dict(required=True)
+    info = f.List(f.Dict(), required=True)
     free = f.Dict()
     used = f.Dict()
     total = f.Dict()

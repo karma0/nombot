@@ -7,10 +7,20 @@ from dataclasses import dataclass
 import ccxt.async as ccxt
 from ccxt.base.errors import ExchangeNotAvailable, ExchangeError
 
+from marshmallow import pre_load
+
 from bors.app.log import LoggerMixin
 
 from nombot.generics.request import RequestSchema
 from nombot.generics.response import ResponseSchema
+
+
+class CCXTResponseSchema(ResponseSchema):
+    """Generic response class"""
+    @pre_load
+    def prep_response(self, in_data):
+        """Set the response to the correct output"""
+        in_data["result"] = in_data
 
 
 @dataclass
@@ -95,7 +105,6 @@ class CCXTExchange:
 
     async def call(self, callname, *args, **kwargs):
         """Generalized async `call` method, pass callname and parameters"""
-        print(f"""callname: {callname}; args: {args}; kwargs: {kwargs}""")
         try:
             return await getattr(self._ex, callname)(*args, **kwargs)
         except TypeError:
@@ -187,7 +196,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
     def __init__(self, context):
         """Launched by Api when we're ready to connect"""
         self.request_schema = RequestSchema
-        self.result_schema = ResponseSchema
+        self.result_schema = CCXTResponseSchema
 
         self.context = context
         self.conf = context.get("conf")
