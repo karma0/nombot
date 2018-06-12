@@ -1,6 +1,7 @@
 """Generic exchange schemas"""
 
 from marshmallow import fields as f
+from marshmallow import pre_load
 
 from bors.generics.common import ResultSchema
 
@@ -131,3 +132,23 @@ class BalanceSchema(ResultSchema):
     free = f.Dict()
     used = f.Dict()
     total = f.Dict()
+    by_sym = f.Dict()
+
+    def prepare(self, in_data):
+        if "result" not in in_data:
+            return
+
+        data = in_data["result"].copy()
+        del in_data["result"]
+        print(f"""PREP: DATA: {data}""")
+        for exch, result in data.items():
+            if exch == "result":
+                continue
+            print(f"""PREP: RESULT: {result}""")
+            in_data[exch] = {"by_sym": {}}
+            for field in ["info", "free", "used", "total"]:
+                print(f"""EXCH: {exch}; FIELD: {field}""")
+                in_data[exch][field] = result[field]
+                del result[field]
+            in_data[exch]["by_sym"] = result.copy()
+        print(f"""IN DATA: {in_data}""")
