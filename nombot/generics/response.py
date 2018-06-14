@@ -33,10 +33,9 @@ class CommonResponseSchema(Schema):
           ~~ Override this to match your API. ~~
         """
         # perform type-specific preperation of data, if it exists
-        prep = getattr(RESPONSE_MAP[callname], "prepare")
+        prep = getattr(RESPONSE_MAP[callname], "prepare", None)
         if callable(prep):
-            prep(data)
-
+            data = prep(data)
         return data.get("result", data)
 
 
@@ -53,7 +52,6 @@ class ResponseSchema(CommonResponseSchema):
             "result": RESPONSE_MAP[callname]  # type: ignore
                       .dump(self.get_result(callname, data))  # NOQA
         }
-        print(f"""RESULT: {result}""")
         return Result(**result)
 
     class Meta:

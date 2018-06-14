@@ -135,20 +135,10 @@ class BalanceSchema(ResultSchema):
     by_sym = f.Dict()
 
     def prepare(self, in_data):
-        if "result" not in in_data:
-            return
-
-        data = in_data["result"].copy()
-        del in_data["result"]
-        print(f"""PREP: DATA: {data}""")
-        for exch, result in data.items():
-            if exch == "result":
-                continue
-            print(f"""PREP: RESULT: {result}""")
-            in_data[exch] = {"by_sym": {}}
-            for field in ["info", "free", "used", "total"]:
-                print(f"""EXCH: {exch}; FIELD: {field}""")
-                in_data[exch][field] = result[field]
-                del result[field]
-            in_data[exch]["by_sym"] = result.copy()
-        print(f"""IN DATA: {in_data}""")
+        data = {"result": {"by_sym": {}}}  # type: dict
+        for key, item in in_data["result"].items():
+            if key in ["info", "free", "used", "total"]:
+                data[key] = item
+            elif key != "result":
+                data["result"]["by_sym"][key] = item
+        return data
