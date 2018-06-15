@@ -6,26 +6,31 @@ from marshmallow import pre_load
 from bors.generics.common import ResultSchema
 
 
-class LimitSchema(ResultSchema):
+class ExchangeSchema(ResultSchema):
+    """A generic schema for exchange meta-interfaces"""
+    exchange = f.Str(required=True)
+
+
+class LimitSchema(ExchangeSchema):
     """A Limit"""
     min = f.Float()
     max = f.Float()
 
 
-class AmountPriceSchema(ResultSchema):
+class AmountPriceSchema(ExchangeSchema):
     """Limits"""
     amount = f.Nested(LimitSchema, required=True)
     price = f.Nested(LimitSchema, required=True)
 
 
-class FeeSchema(ResultSchema):
+class FeeSchema(ExchangeSchema):
     """A fee"""
     currency = f.Str(required=True)
     cost = f.Float(required=True)
     rate = f.Float(required=True)
 
 
-class OrderSchema(ResultSchema):
+class OrderSchema(ExchangeSchema):
     """Order"""
     id = f.Str(required=True)
     datetime = f.Str(required=True)
@@ -45,15 +50,24 @@ class OrderSchema(ResultSchema):
     info = f.Dict(required=True)
 
 
-class OrderBookSchema(ResultSchema):
+class OrderBookSchema(ExchangeSchema):
     """Order Book"""
     bids = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
     asks = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
     timestamp = f.Int()
     datetime = f.Str()
 
+    def prepare(self, in_data):
+        print(f"""IN DATA: {in_data["result"].keys()}""")
+        data = {"result": {}}  # type: dict
+        for key, item in in_data["result"].items():
+            if key != "result":
+                data["result"][key] = item
+        print(f"""IN DATA: {data["result"]}""")
+        return data
 
-class MarketSchema(ResultSchema):
+
+class MarketSchema(ExchangeSchema):
     """Market"""
     active = f.Bool(required=True)
     symbol = f.Str(required=True)  # 'BTC/USD'
@@ -72,7 +86,7 @@ class MarketSchema(ResultSchema):
     tierBased = f.Bool()
 
 
-class TickerSchema(ResultSchema):
+class TickerSchema(ExchangeSchema):
     """Ticker!"""
     symbol = f.Str(required=True)
     info = f.Dict(required=True)
@@ -95,8 +109,14 @@ class TickerSchema(ResultSchema):
     baseVolume = f.Float()
     quoteVolume = f.Float()
 
+    def prepare(self, in_data):
+        data = {"result": {}}  # type: dict
+        for key, item in in_data["result"].items():
+            if key != "result":
+                data["result"][key] = item
+        return data
 
-class TradeSchema(ResultSchema):
+class TradeSchema(ExchangeSchema):
     """A single trade"""
     info = f.Dict(required=True)
     id = f.Str(required=True)
@@ -110,7 +130,7 @@ class TradeSchema(ResultSchema):
     amount = f.Float(required=True)
 
 
-class MyTradeSchema(ResultSchema):
+class MyTradeSchema(ExchangeSchema):
     """A single trade on my account"""
     id = f.Str(required=True)
     timestamp = f.Int(required=True)
@@ -126,7 +146,7 @@ class MyTradeSchema(ResultSchema):
     info = f.Dict(required=True)
 
 
-class BalanceSchema(ResultSchema):
+class BalanceSchema(ExchangeSchema):
     """The Balances"""
     info = f.List(f.Dict(), required=True)
     free = f.Dict()
@@ -136,9 +156,12 @@ class BalanceSchema(ResultSchema):
 
     def prepare(self, in_data):
         data = {"result": {"by_sym": {}}}  # type: dict
-        for key, item in in_data["result"].items():
-            if key in ["info", "free", "used", "total"]:
-                data[key] = item
-            elif key != "result":
-                data["result"]["by_sym"][key] = item
+        for exch, result in in_data["result"].items():
+            if exch != "result":
+                data["result"]["exchange"] = exch
+                for key, item in result.items():
+                    if key in ["info", "free", "used", "total"]:
+                        data[key] = item
+                    elif key != "result":
+                        data["result"]["by_sym"][key] = item
         return data
