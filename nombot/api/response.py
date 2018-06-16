@@ -8,7 +8,7 @@ from nombot.generics import exchange as X
 
 RESPONSE_MAP = {
     # commented, as they are not implemented
-    "fetchBalance": X.BalanceSchema(),
+    "fetchBalance": X.BalanceSchema(many=True),
     "fetchMarkets": X.MarketSchema(),
     # "fetchOHLCV": X.OHLCVSchema(many=True),
     "fetchOrderBook": X.OrderBookSchema(many=True),
@@ -28,6 +28,6 @@ class Result(DotObj):
         self.callname = kwargs.get('callname', None)
         self.channel = kwargs.get('channel', None)
         self.response_type = kwargs.get('response_type', None)
-        self.result = kwargs.get('result', None)
+        self.result = kwargs.get('results', None)
         self.errors = kwargs.get('errors', None)
-        super().__init__(**kwargs)
+        #super().__init__(**kwargs)

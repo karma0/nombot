@@ -10,6 +10,18 @@ class ExchangeSchema(ResultSchema):
     """A generic schema for exchange meta-interfaces"""
     exchange = f.Str(required=True)
 
+    def prepare(self, data):
+        _data = []  # type: list
+        for exch, result in data["result"].items():
+            if exch != "result":
+                _result = {}
+                _result["exchange"] = exch
+                for key, item in result.items():
+                    if key != "result":
+                        _result[key] = item
+                _data.append(_result)
+        return _data
+
 
 class LimitSchema(ExchangeSchema):
     """A Limit"""
@@ -56,15 +68,22 @@ class OrderBookSchema(ExchangeSchema):
     asks = f.List(f.List(f.Float()))  # [  [ price, amount ], ... ]
     timestamp = f.Int()
     datetime = f.Str()
+    nonce = f.Int()
+    market = f.Str()
 
-    def prepare(self, in_data):
-        print(f"""IN DATA: {in_data["result"].keys()}""")
-        data = {"result": {}}  # type: dict
-        for key, item in in_data["result"].items():
-            if key != "result":
-                data["result"][key] = item
-        print(f"""IN DATA: {data["result"]}""")
-        return data
+    def prepare(self, data):
+        data = super().prepare(data)
+        _data = []
+        for result in data:
+            for market, orderbook in result.items():
+                if market != "exchange":
+                    _result = {"exchange": result["exchange"]}
+                    _result["market"] = market
+                    for key, item in orderbook.items():
+                        if key != "market":
+                            _result[key] = item
+                    _data.append(_result)
+        return _data
 
 
 class MarketSchema(ExchangeSchema):
@@ -109,12 +128,6 @@ class TickerSchema(ExchangeSchema):
     baseVolume = f.Float()
     quoteVolume = f.Float()
 
-    def prepare(self, in_data):
-        data = {"result": {}}  # type: dict
-        for key, item in in_data["result"].items():
-            if key != "result":
-                data["result"][key] = item
-        return data
 
 class TradeSchema(ExchangeSchema):
     """A single trade"""
@@ -154,14 +167,15 @@ class BalanceSchema(ExchangeSchema):
     total = f.Dict()
     by_sym = f.Dict()
 
-    def prepare(self, in_data):
-        data = {"result": {"by_sym": {}}}  # type: dict
-        for exch, result in in_data["result"].items():
+    def prepare(self, data):
+        _data = []  # type: list
+        for exch, result in data["result"].items():
             if exch != "result":
-                data["result"]["exchange"] = exch
+                _result = {"exchange": exch, "by_sym": {}}  # type: dict
                 for key, item in result.items():
                     if key in ["info", "free", "used", "total"]:
-                        data[key] = item
+                        _result[key] = item
                     elif key != "result":
-                        data["result"]["by_sym"][key] = item
-        return data
+                        _result["by_sym"][key] = item
+                _data.append(_result)
+        return _data
