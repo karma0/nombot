@@ -61,6 +61,19 @@ class OrderSchema(ExchangeSchema):
     fee = f.Nested(FeeSchema, required=True)
     info = f.Dict(required=True)
 
+    def prepare(self, data):
+        _data = []  # type: list
+        for exch, result in data["result"].items():
+            print(f"""EXCH: {exch}; RESULT: {result}""")
+            if exch != "result":
+                _result = {}
+                _result["exchange"] = exch
+                for key, item in result.items():
+                    if key != "result":
+                        _result[key] = item
+                _data.append(_result)
+        return _data
+
 
 class OrderBookSchema(ExchangeSchema):
     """Order Book"""
@@ -108,7 +121,7 @@ class MarketSchema(ExchangeSchema):
 class TickerSchema(ExchangeSchema):
     """Ticker!"""
     symbol = f.Str(required=True)
-    info = f.Dict(required=True)
+    info = f.Dict()
     timestamp = f.Int()
     datetime = f.Str()
     high = f.Float()
@@ -128,6 +141,17 @@ class TickerSchema(ExchangeSchema):
     baseVolume = f.Float()
     quoteVolume = f.Float()
 
+    def prepare(self, data):
+        _data = []
+        for result in super().prepare(data):
+            exchange = result["exchange"]
+            del result["exchange"]
+            for tick in result.values():
+                _result = tick
+                _result["exchange"] = exchange
+                _data.append(_result)
+        return _data
+
 
 class TradeSchema(ExchangeSchema):
     """A single trade"""
@@ -141,6 +165,18 @@ class TradeSchema(ExchangeSchema):
     side = f.Str(required=True)
     price = f.Float(required=True)
     amount = f.Float(required=True)
+
+    def prepare(self, data):
+        _data = []
+        for result in super().prepare(data):
+            exchange = result["exchange"]
+            del result["exchange"]
+            for market in result.values():
+                for trade in market:
+                    _result = trade
+                    _result["exchange"] = exchange
+                    _data.append(_result)
+        return _data
 
 
 class MyTradeSchema(ExchangeSchema):

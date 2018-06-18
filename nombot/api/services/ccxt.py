@@ -191,6 +191,7 @@ class CCXTApi(LoggerMixin):  # pylint: disable=R0902
         "fetchOHLCV": "call_over_syms",
         "fetchOrderBook": "call_over_syms",
         "fetchTicker": "call_over_syms",
+        "fetchTrades": "call_over_syms",
     }
 
     def __init__(self, context):

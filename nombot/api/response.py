@@ -30,4 +30,3 @@ class Result(DotObj):
         self.response_type = kwargs.get('response_type', None)
         self.result = kwargs.get('results', None)
         self.errors = kwargs.get('errors', None)
-        #super().__init__(**kwargs)
