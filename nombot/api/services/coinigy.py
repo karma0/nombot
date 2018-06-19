@@ -5,10 +5,10 @@ from marshmallow import fields, pre_load
 from bors.app.log import LoggerMixin
 from bors.api.requestor import Req
 from bors.api.websock import SockMixin
+from bors.generics.coinigy import NotificationSchema
 
 from nombot.generics.request import RequestSchema
 from nombot.generics.response import WSResponseSchema, ResponseSchema
-from nombot.generics.exchange import NotificationSchema
 
 
 class CoinigyResponseSchema(ResponseSchema):

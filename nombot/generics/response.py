@@ -27,12 +27,16 @@ class CommonResponseSchema(Schema):
     """Common response schema"""
     errors = fields.Dict()
 
-    def get_result(self, data):  # pylint: disable=no-self-use
+    def get_results(self, callname, data):  # pylint: disable=no-self-use
         """
-        Retrieve the result from the parsed object
+        Retrieve the results from the parsed object
           ~~ Override this to match your API. ~~
         """
-        return data.get("result", "")
+        # perform type-specific preperation of data, if it exists
+        prep = getattr(RESPONSE_MAP[callname], "prepare", None)
+        if callable(prep):
+            data = prep(data)
+        return data
 
 
 class ResponseSchema(CommonResponseSchema):
@@ -43,12 +47,12 @@ class ResponseSchema(CommonResponseSchema):
         if "errors" in data:
             return Result(errors=data["errors"])
         callname = self.context.get("callname")
-        result = {
+        results = {
             "callname": callname,
-            "result": RESPONSE_MAP[callname]  # type: ignore
-                      .dump(self.get_result(data))  # NOQA
+            "results": RESPONSE_MAP[callname]  # type: ignore
+                .dump(self.get_results(callname, data))  # NOQA
         }
-        return Result(**result)
+        return Result(**results)
 
     class Meta:
         """Stricty"""
@@ -72,7 +76,7 @@ class WSResponseSchema(CommonResponseSchema):
         except KeyError:
             sch = RESPONSE_MAP["default"]
 
-        self.context["result"] = sch.dump(self.get_result(data)).data  # NOQA
+        self.context["result"] = sch.dump(self.get_result(callname, data)).data  # NOQA
         return self.context
 
     @post_load

@@ -4,20 +4,22 @@
 Trading bot
 """
 
+import logging
+
+from bors.app.strategy import Strategy
+from bors.strategies.print import Print
+
+from nombot.app.builder import NomAppBuilder
+from nombot.app.config import NomAppConf
+from nombot.api.services.ccxt import CCXTApi
+
 try:
     import coloredlogs
     coloredlogs.install()
 except ImportError:
     print("Use Python coloredlogs module for colored output")
 
-from bors.app.strategy import Strategy
-from bors.strategies.print import PrintResult
-
-from nombot.app.builder import NomAppBuilder
-from nombot.app.config import NomAppConf
-from nombot.strategies.middleware.coinigy import CoinigyStrategy
-from nombot.strategies.middleware.trading import OHLCVStrategy
-from nombot.api.services.coinigy import Coinigy
+logging.basicConfig(level=logging.DEBUG)
 
 
 def main(strategies=None, apiclasses=None, configfile=None):
@@ -25,12 +27,10 @@ def main(strategies=None, apiclasses=None, configfile=None):
     # instantiate this first to avoid weird errors
     if strategies is None:
         strategies = [
-            CoinigyStrategy(),
-            OHLCVStrategy(),
-            PrintResult(),
+            Print(),
         ]
     if apiclasses is None:
-        apiclasses = [Coinigy]
+        apiclasses = [CCXTApi]
 
     # Roll out pipeline
     configfile = "config.json" if configfile is None else configfile
