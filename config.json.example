@@ -1,34 +1,38 @@
 {
   "api": {
-    "ratelimit": 1,
     "calls": {
-      "accounts": {
+      "fetchOrderBook": {
         "delay": 3,
-        "priority": 1,
+      },
+      "fetchTickers": {
+        "delay": 10,
+      },
+      "fetchTrades": {
+        "delay": 5,
         "arguments": null
       }
     },
     "services": [
       {
-        "name": "coinigy",
+        "name": "ccxt",
         "credentials": {
-          "apikey": "xxx",
+          "name": "bittrex",
+          "apiKey": "xxx",
           "secret": "xxx"
         },
 
+        "currencies": [
+          "USDT"
+        ],
+
         "subscriptions": {
-          "xxx-account-channel-key-goes-here-xxx": "ws_trade_ticker",
-          "TICKER": "ticker"
         },
 
         "exchanges": [
-          "BTRX"
+          "bittrex",
+          "bitfinex"
         ],
 
-        "endpoints": {
-          "rest": "https://api.coinigy.com/api/v1",
-          "websocket": "wss://sc-02.coinigy.com/socketcluster/"
-        }
       }
     ]
   },
@@ -51,10 +55,10 @@
   "currencies": [
     "BTC",
     "USD",
-    "XRP",
     "ETH",
     "ETC",
-    "LTC"
+    "LTC",
+    "XRP"
   ]
 
 }
