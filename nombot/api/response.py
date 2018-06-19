@@ -7,21 +7,18 @@ from nombot.generics import exchange as X
 
 
 RESPONSE_MAP = {
-    "accounts": X.AccountSchema(many=True),
-    "balances": X.BalanceSchema(many=True),
-    "alerts": X.AllAlertsSchema(),
-    "newsFeed": X.NewsItemSchema(many=True),
-    "orderTypes": X.OrderTypesCallSchema(),
-    "refreshBalance": X.BalanceSchema(),
-    "addOrder": X.OrderReferenceSchema(),
-    "exchanges": X.ExchangeSchema(many=True),
-    "markets": X.MarketSchema(many=True),
-    "data": X.AllMarketDataSchema(),
-    "ticker": X.TickSchema(),
-    "trade": X.WsTradeChannel(),
-    "orders": X.WsOrderChannel(many=True),
-    "Favorite": X.FavoriteTickSchema(many=True),
-    "all": X.AllMarketDataSchema(),
+    # commented, as they are not implemented
+    "fetchBalance": X.BalanceSchema(many=True),
+    "fetchMarkets": X.MarketSchema(),
+    # "fetchOHLCV": X.OHLCVSchema(many=True),
+    "fetchOrderBook": X.OrderBookSchema(many=True),
+    "fetchOrders": X.OrderSchema(many=True),
+    "fetchOpenOrders": X.OrderSchema(many=True),
+    "fetchClosedOrders": X.OrderSchema(many=True),
+    "fetchTicker": X.TickerSchema(),
+    "fetchTickers": X.TickerSchema(many=True),
+    "fetchTrades": X.TradeSchema(many=True),
+    "fetchMyTrades": X.MyTradeSchema(many=True),
 }
 
 
@@ -31,6 +28,5 @@ class Result(DotObj):
         self.callname = kwargs.get('callname', None)
         self.channel = kwargs.get('channel', None)
         self.response_type = kwargs.get('response_type', None)
-        self.result = kwargs.get('result', None)
+        self.result = kwargs.get('results', None)
         self.errors = kwargs.get('errors', None)
-        super().__init__(**kwargs)

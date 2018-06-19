@@ -21,8 +21,8 @@ Python Dependencies
 
 -  Python 3.6+ is assumed
 -  ``bors``
--  ``requests``
--  ``marshmallow`` for message passing, validation, and API message object definition.
+-  ``ccxt``
+-  ``dataclasses``
 
 Key Features
 ------------
@@ -30,7 +30,7 @@ Key Features
 Exchanges
 ~~~~~~~~~
 
--  Extensible for any exchange *(currently only supports coinigy)*.
+-  Extensible for any exchange using CCXT.
 -  Exchange helper facilities; \_connection pooling, websockets, shared
    contexts.
 -  Mutiple exchange connectivity allowing for arbitrage.
@@ -39,20 +39,15 @@ Exchanges
 Currencies
 ~~~~~~~~~~
 
-*(coming soon)* \* All currencies possible (with some configuration). \*
-Strive towards forward-compatible; *if the exchange supports it, it will
+All currencies supported; *if the exchange supports it, it will
 work*. \* Wallet support, allowing for automated coin transfers.
 *(coming soon)*
 
 Algorithms
 ~~~~~~~~~~
 
--  Implementation is independent of strategy, allowing for maximal
-   reuse, flexibility, and enforcing DRY principles.
--  Can be developed to an interface using ``grpc`` and ``protobuf``, for
-   example.
--  Integrated support for NumPy Arrays and Pandas DataFrames
-   (implemented at the strategy level).
+Implementation is independent of strategy, allowing for maximal
+reuse, flexibility, and enforcing DRY principles.
 
 Strategies
 ~~~~~~~~~~
@@ -66,18 +61,12 @@ Strategies
 -  Utilization of algorithms as backend functional libraries (strategy
    equates to "business logic").
 -  Automatic configuration pass-through.
+-  See ``bors`` for more information.
 
 Configuration
 ~~~~~~~~~~~~~
 
--  Flexible modularized configuration using JSON.
--  C-style comment support.
--  Configuration objects are protected immutable, using ``namedtuple``
-   containers.
--  Configuration object parameters exist as object attributes:
-   ``conf.var1``.
--  Configuration is namespaced, allowing for hierarchical configuration
-   passthrough.
+Flexible modularized configuration using JSON.  See ``config.json.example``.
 
 Security
 ~~~~~~~~
@@ -90,14 +79,11 @@ Security
 Coming soon...
 ~~~~~~~~~~~~~~
 
--  GRPC strategy to allow parallel processing in microservices
-   environments.
--  API expansion to World Coin Market's top-20 exchanges.
 -  Backtesting and supporting documentation.
--  Database integration.
 -  More documentation around creating exchanges, algorithms, and
    strategies.
 -  Tests, tests, tests!
+-  For a deployment example, see ``siphonexchange``.
 
 Setup
 -----
@@ -114,7 +100,7 @@ Upgrading to the latest
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``master`` branch will contain the latest release. ``develop`` will
-contain the latest development release and may break things.
+contain the latest developments and may break things.
 
 .. code:: bash
 
