@@ -6,3 +6,4 @@ socketclusterclient
 urllib3
 websocket-client
 bors
+Click
