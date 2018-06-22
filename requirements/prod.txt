@@ -1,0 +1,9 @@
+marshmallow
+python-dateutil
+pytz
+requests
+socketclusterclient
+urllib3
+websocket-client
+bors
+Click
