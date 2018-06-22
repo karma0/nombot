@@ -7,7 +7,10 @@ https://github.com/karma0/nombot.git
 from os import path
 import codecs
 
-from pip.req import parse_requirements
+try: # for pip >= 10
+    from pip._internal.req import parse_requirements
+except ImportError: # for pip <= 9.0.3
+    from pip.req import parse_requirements
 
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
@@ -49,7 +52,7 @@ setup(
     # For a discussion on single-sourcing the version across setup.py and the
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='2.1.0',  # Required
+    version='2.1.2',  # Required
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
