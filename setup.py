@@ -17,8 +17,17 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = parse_requirements('requirements/prod.txt')
-test_requirements = parse_requirements('requirements/test.txt')
+# try/catch to account for local installs vs. pypi
+try:
+    requirements = parse_requirements('requirements/prod.txt')
+except FileNotFoundError:
+    requirements = parse_requirements('prod.txt')
+
+try:
+    test_requirements = parse_requirements('test.txt')
+except FileNotFoundError:
+    test_requirements = parse_requirements('requirements/test.txt')
+
 
 setup_requirements = ['pytest-runner', ]
 
@@ -49,6 +58,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/karma0/nombot',
-    version='2.2.0',
+    version='2.2.3',
     zip_safe=False,
 )
