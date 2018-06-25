@@ -1,6 +1,6 @@
 marshmallow==2.15.3
 python-dateutil==2.7.3
-pytz
+pytz==2018.4
 requests
 socketclusterclient
 urllib3
