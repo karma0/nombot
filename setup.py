@@ -5,28 +5,26 @@
 
 from setuptools import setup, find_packages
 
-
-def parse_requirements(filename):
-    """ load requirements from a pip requirements file """
-    lineiter = (line.strip() for line in open(filename))
-    return [line for line in lineiter if line and not line.startswith("#")]
-
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-# try/catch to account for local installs vs. pypi
-try:
-    requirements = parse_requirements('requirements/prod.txt')
-except FileNotFoundError:
-    requirements = parse_requirements('prod.txt')
+requirements = [
+    'marshmallow',
+    'requests',
+    'urllib3',
+    'bors',
+    'click',
+]
 
-try:
-    test_requirements = parse_requirements('test.txt')
-except FileNotFoundError:
-    test_requirements = parse_requirements('requirements/test.txt')
+test_requirements = [
+    'pytest',
+    'tox',
+    'coverage',
+    'pytest-cov',
+]
 
 
 setup_requirements = ['pytest-runner', ]
@@ -53,11 +51,12 @@ setup(
     include_package_data=True,
     keywords='nombot cryptocurrency bot',
     name='nombot',
-    packages=find_packages(include=['nombot']),
+    packages=find_packages(exclude=['tests', 'docs']),
+    package_dir={'nombot': 'nombot'},
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/karma0/nombot',
-    version='2.2.3',
+    version='2.2.4',
     zip_safe=False,
 )
