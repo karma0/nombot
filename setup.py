@@ -57,6 +57,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/karma0/nombot',
-    version='2.2.4',
+    version='2.1.5',
     zip_safe=False,
 )
