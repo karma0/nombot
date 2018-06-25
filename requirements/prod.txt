@@ -1,7 +1,7 @@
 marshmallow==2.15.3
 python-dateutil==2.7.3
 pytz==2018.4
-requests
+requests==2.19.1
 socketclusterclient
 urllib3
 websocket-client
