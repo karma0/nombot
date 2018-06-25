@@ -2,7 +2,7 @@ pytest==3.6.2
 tox==3.0.0
 coverage==4.5.1
 pytest-cov==2.5.1
-pip
+pip==10.0.1
 wheel
 flake8
 Sphinx
