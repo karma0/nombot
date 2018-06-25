@@ -1,6 +1,6 @@
 pytest==3.6.2
 tox==3.0.0
-coverage
+coverage==4.5.1
 pytest-cov
 pip
 wheel
