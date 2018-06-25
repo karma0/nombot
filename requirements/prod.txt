@@ -1,5 +1,5 @@
 marshmallow==2.15.3
-python-dateutil
+python-dateutil==2.7.3
 pytz
 requests
 socketclusterclient
