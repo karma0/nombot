@@ -2,7 +2,7 @@
 History
 =======
 
-2.1.5 (2018-06-22)
+2.2.4 (2018-06-25)
 ------------------
 
-* First release on PyPI.
+* Replaced packaging with cookiecutter-pypackage
