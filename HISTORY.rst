@@ -7,6 +7,7 @@ History
 
 * Update README with badges.
 * Upgraded dependencies.
+* Added several unit tests.
 
 2.2.6 (2018-06-26)
 ------------------
