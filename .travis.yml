@@ -3,6 +3,8 @@ python:
   - "3.6"
 install: pip install -U tox-travis
 script: tox
+before_install:
+  - export PATH=$(echo $PATH | tr ':' "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s|::|:|g")
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
