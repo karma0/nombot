@@ -3,8 +3,6 @@ python:
   - "3.6"
 install:
   - pip install -U tox-travis
-  - pip install -r requirements.txt
-  - pip install -e .
 script: tox
 deploy:
   provider: pypi
