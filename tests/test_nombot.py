@@ -6,7 +6,7 @@
 
 import unittest
 
-from nombot import nombot
+#from trader import main
 
 
 class TestNombot(unittest.TestCase):
@@ -18,5 +18,5 @@ class TestNombot(unittest.TestCase):
     def tearDown(self):
         """Tear down test fixtures, if any."""
 
-    def test_000_something(self):
-        """Test something."""
+    def test_main(self):
+        """Test main trader"""

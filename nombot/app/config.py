@@ -11,6 +11,7 @@ class NomAppConf(AppConf):
     def get_currencies(self, service=None):
         """Returns the currencies that we'll be working with"""
         try:
+            self.get_api_services_by_name()
             if service is not None:
                 svc_conf = self.services_by_name[service]
                 return svc_conf.get("currencies", []).copy() \
