@@ -1,7 +1,7 @@
 .. image:: https://travis-ci.org/karma0/nombot.svg?branch=master
     :target: https://travis-ci.org/karma0/nombot
 
-.. image:: //readthedocs.org/projects/nombot/badge/?version=latest
+.. image:: https://readthedocs.org/projects/nombot/badge/?version=latest
     :target: https://nombot.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
