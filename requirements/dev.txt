@@ -1,4 +1,4 @@
--r requirements/test.txt
+-r test.txt
 pip==10.0.1
 wheel==0.31.1
 flake8==3.5.0

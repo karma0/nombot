@@ -1,4 +1,4 @@
--r requirements/prod.txt
+-r prod.txt
 pytest==3.6.2
 tox==3.0.0
 coverage==4.5.1
