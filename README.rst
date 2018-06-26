@@ -6,12 +6,13 @@
     :alt: Documentation Status
 
 .. image:: https://pyup.io/repos/github/karma0/nombot/shield.svg
-     :target: https://pyup.io/repos/github/karma0/nombot/
-     :alt: Updates
+    :target: https://pyup.io/repos/github/karma0/nombot/
+    :alt: Updates
 
 .. image:: https://pyup.io/repos/github/karma0/nombot/python-3-shield.svg
-     :target: https://pyup.io/repos/github/karma0/nombot/
-     :alt: Python 3
+    :target: https://pyup.io/repos/github/karma0/nombot/
+    :alt: Python 3
+
 
 nombot
 ======
