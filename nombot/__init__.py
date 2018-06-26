@@ -2,6 +2,6 @@
 
 __author__ = 'Bobby'
 __email__ = 'karma0@gmail.com'
-__version__ = '2.2.6'
+__version__ = '2.2.7'
 
 from nombot import *
