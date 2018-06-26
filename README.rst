@@ -1,8 +1,3 @@
-nombot
-======
-
-A flexible cryptocurrency trading bot written in Python and ``bors``.
-
 .. image:: https://travis-ci.org/karma0/nombot.svg?branch=master
     :target: https://travis-ci.org/karma0/nombot
 
@@ -17,6 +12,11 @@ A flexible cryptocurrency trading bot written in Python and ``bors``.
 .. image:: https://pyup.io/repos/github/karma0/nombot/python-3-shield.svg
      :target: https://pyup.io/repos/github/karma0/nombot/
      :alt: Python 3
+
+nombot
+======
+
+A flexible cryptocurrency trading bot written in Python and ``bors``.
 
 Dependencies
 ------------
