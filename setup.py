@@ -24,7 +24,7 @@ test_requirements = [
     'tox',
     'coverage',
     'pytest-cov',
-] + requirements
+]
 
 
 setup_requirements = ['pytest-runner', ]
