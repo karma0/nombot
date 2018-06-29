@@ -71,12 +71,14 @@ class CCXTExchange(LoggerMixin):
             return
 
         try:
+            self.log.info(f"""Attempting to load markets for {self.name}""")
             self.avail_markets = await self._ex.load_markets(*args, **kwargs)
         except (ExchangeNotAvailable,
                 ExchangeError,
                 AuthenticationError,
                 RequestTimeout,
                 ):
+            self.log.error(f"""Failed to load markets for {self.name}""")
             self.avail_markets = []
 
         self.avail_currencies = getattr(self._ex, "currencies", {})
@@ -109,21 +111,24 @@ class CCXTExchange(LoggerMixin):
         results = {}
         for sym in self.markets.keys():
             try:
-                self.log.info(f"""Calling {callname} on exchange {self.name}""")
                 results[sym] = await self.call(callname, sym, *args, **kwargs)
-            except (ExchangeNotAvailable, ExchangeError) as err:
+            except Exception as err:
                 self.log.error(f"""Error on call {callname} for exchange """
                               f"""{self.name}: {err}""")
-        return results
+            finally:
+                return results
 
     async def call(self, callname, *args, **kwargs):
         """Generalized async `call` method, pass callname and parameters"""
         try:
+            self.log.info(f"""Calling {callname} on exchange {self.name}""")
             return await getattr(self._ex, callname)(*args, **kwargs)
         except TypeError:
             raise AttributeError(f"Failed to execute call {callname} on "
                                  f"exchange {self._ex.name}")
         except RequestTimeout:
+            self.log.error(f"""RequestTimeout on call {callname} for exchange """
+                           f"""{self.name}""")
             return {}
 
 
@@ -189,8 +194,9 @@ class CCXT:
                 except (ExchangeNotAvailable,
                         ExchangeError,
                         AuthenticationError,
-                        ):
-                    pass
+                        ) as err:
+                    self.log.info(f"Calling {callname} on all exchanges"
+                                  f"failed: {err}")
         return results
 
     def shutdown(self):
