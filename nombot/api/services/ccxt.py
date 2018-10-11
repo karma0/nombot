@@ -5,7 +5,8 @@ from itertools import product
 from dataclasses import dataclass
 
 import ccxt.async as ccxt
-from ccxt.base.errors import ExchangeNotAvailable, ExchangeError
+from ccxt.base.errors import ExchangeNotAvailable, ExchangeError,\
+                             AuthenticationError, RequestTimeout
 
 from marshmallow import pre_load
 
@@ -24,12 +25,13 @@ class CCXTResponseSchema(ResponseSchema):
 
 
 @dataclass
-class CCXTExchange:
+class CCXTExchange(LoggerMixin):
     """Exchange data object"""
     name: str
     currencies: list
     rate_limit: int = None
     credentials: dict = None
+    context: dict = None
 
     _ex = None
     loop = asyncio.get_event_loop()
@@ -44,6 +46,8 @@ class CCXTExchange:
     symbols = None
 
     def __post_init__(self):
+        self.create_logger()
+
         # instantiate exchange object
         self._ex = getattr(ccxt, self.name)()
 
@@ -66,7 +70,16 @@ class CCXTExchange:
         if self.markets is not None and not reload:
             return
 
-        self.avail_markets = await self._ex.load_markets(*args, **kwargs)
+        try:
+            self.log.info(f"""Attempting to load markets for {self.name}""")
+            self.avail_markets = await self._ex.load_markets(*args, **kwargs)
+        except (ExchangeNotAvailable,
+                ExchangeError,
+                AuthenticationError,
+                RequestTimeout,
+                ):
+            self.log.error(f"""Failed to load markets for {self.name}""")
+            self.avail_markets = []
 
         self.avail_currencies = getattr(self._ex, "currencies", {})
         if not self.currencies:
@@ -99,17 +112,25 @@ class CCXTExchange:
         for sym in self.markets.keys():
             try:
                 results[sym] = await self.call(callname, sym, *args, **kwargs)
-            except (ExchangeNotAvailable, ExchangeError):
-                pass
-        return results
+            except Exception as err:
+                self.log.error(f"""Error on call {callname} for exchange """
+                              f"""{self.name}: {err}""")
+            finally:
+                return results
 
     async def call(self, callname, *args, **kwargs):
         """Generalized async `call` method, pass callname and parameters"""
         try:
+            self.log.info(f"""Calling {callname} on exchange {self.name}""")
             return await getattr(self._ex, callname)(*args, **kwargs)
         except TypeError:
             raise AttributeError(f"Failed to execute call {callname} on "
                                  f"exchange {self._ex.name}")
+        except RequestTimeout:
+            self.log.error(f"""RequestTimeout on call {callname} for exchange """
+                           f"""{self.name}""")
+            return {}
+
 
     async def close(self):
         """Close all exchange connections"""
@@ -150,7 +171,8 @@ class CCXT:
             # launch exchange
             self._ex[exch] = \
                 CCXTExchange(exch, currencies=currencies,
-                             rate_limit=rate_limit, credentials=creds)
+                             rate_limit=rate_limit, credentials=creds,
+                             context=context)
 
     def call_capable(self, exch, callname):
         """Determine if the exchange supports the call"""
@@ -169,8 +191,12 @@ class CCXT:
                 try:
                     results[ex.name] = ex.loop.run_until_complete(
                         getattr(ex, calltype)(callname, *args, **kwargs))
-                except (ExchangeNotAvailable, ExchangeError):
-                    pass
+                except (ExchangeNotAvailable,
+                        ExchangeError,
+                        AuthenticationError,
+                        ) as err:
+                    self.log.info(f"Calling {callname} on all exchanges"
+                                  f"failed: {err}")
         return results
 
     def shutdown(self):
