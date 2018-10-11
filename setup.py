@@ -17,6 +17,7 @@ requirements = [
     'urllib3',
     'bors',
     'click',
+    'ccxt',
 ]
 
 test_requirements = [

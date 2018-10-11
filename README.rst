@@ -19,6 +19,9 @@ nombot
 
 A flexible cryptocurrency trading bot written in Python and ``bors``.
 
+NOTE: This project is currently awaiting any major changes until `ccxt` support
+for websockets comes out.
+
 Dependencies
 ------------
 
@@ -88,7 +91,7 @@ Security
 ~~~~~~~~
 
 -  Namespaced immutable configuration will greatly reduce your chance of
-   information leakage and manipulation.
+   information leakage and manipulation between middlewares.
 -  File system storage & security (requires careful consideration of
    file permissions; see install notes below).
 
@@ -104,16 +107,30 @@ Coming soon...
 Setup
 -----
 
-Installation
-~~~~~~~~~~~~
+Installation from PyPi
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: bash
+
+    pip install nombot
+
+Upgrading to the latest from PyPi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: bash
+
+    pip install -U nombot
+
+Installation from source
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: bash
 
     git clone https://github.com/karma0/nombot.git nombot && cd $_
-    pip install requests numpy pandas
+    pip install -U .
 
-Upgrading to the latest
-~~~~~~~~~~~~~~~~~~~~~~~
+Upgrading to the latest from source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``master`` branch will contain the latest release. ``develop`` will
 contain the latest developments and may break things.
