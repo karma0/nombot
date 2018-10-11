@@ -1,0 +1,52 @@
+{
+  "api": {
+    "ratelimit": 1,
+    "calls": {
+
+      "fetchOrderBook": {
+        "delay": 1
+      },
+
+      "fetchTickers": {
+        "delay": 1
+      },
+
+      "fetchTrades": {
+        "delay": 1
+      },
+
+      "fetchBalance": {
+        "delay": 30
+      }
+
+    },
+    "services": [
+      {
+        "name": "ccxt",
+
+        "credentials": [
+          {
+            "name": "bittrex",
+            "apiKey": "<YOUR API KEY FOR BITTREX>",
+            "secret": "<YOUR SECRET FOR BITTREX>",
+          }
+        ],
+
+        "currencies": [],
+
+        "subscriptions": {},
+
+        "exchanges": [
+          "bittrex",
+          "cex",
+          "kraken",
+          "poloniex"
+        ]
+
+      }
+    ]
+  },
+
+  "log_level": "DEBUG"
+
+}
