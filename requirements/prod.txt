@@ -1,4 +1,4 @@
+ccxt==1.17.439
 marshmallow==2.16.2
-ccxt==1.17.434
 bors==0.3.6
 Click==7.0
