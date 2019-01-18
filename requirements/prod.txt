@@ -1,4 +1,4 @@
 marshmallow==2.18.0
-ccxt==1.18.131
+ccxt==1.18.134
 bors==0.3.6
 Click==7.0
