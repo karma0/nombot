@@ -1,5 +1,5 @@
 -r test.txt
 wheel==0.33.1
 pip==19.0.3
-Sphinx==1.8.4
+Sphinx==1.8.5
 flake8==3.7.7
