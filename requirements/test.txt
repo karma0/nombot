@@ -1,6 +1,6 @@
 -r prod.txt
 
-tox==3.8.6
+tox==3.9.0
 pytest==4.4.1
 coverage==4.5.3
 pytest-cov==2.6.1
