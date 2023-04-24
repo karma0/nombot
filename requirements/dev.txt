@@ -3,4 +3,4 @@
 flake8==3.7.8
 wheel==0.33.6
 pip==19.3
-Sphinx==2.2.0
+Sphinx==6.2.0
