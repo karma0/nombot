@@ -1,6 +1,6 @@
 -r test.txt
 
 flake8==3.7.8
-wheel==0.33.6
+wheel==0.41.2
 pip==19.3
 Sphinx==2.2.0
